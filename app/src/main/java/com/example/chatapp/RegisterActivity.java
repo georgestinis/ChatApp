@@ -24,10 +24,10 @@ import java.util.HashMap;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    MaterialEditText username, email, password;
-    Button register;
-    FirebaseAuth auth;
-    DatabaseReference reference;
+    private MaterialEditText username, email, password;
+    private Button register;
+    private FirebaseAuth auth;
+    private DatabaseReference reference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
