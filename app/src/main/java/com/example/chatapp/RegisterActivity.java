@@ -46,6 +46,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
 
+        // When register is clicked check if fields are empty and if password is longer than 6 characters and call register method
         register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -67,6 +68,7 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void register(final String username, final String email, final String password) {
+        // If register task is successful add a reference to Users
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override

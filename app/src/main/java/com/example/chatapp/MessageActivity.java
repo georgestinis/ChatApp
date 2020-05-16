@@ -65,6 +65,7 @@ public class MessageActivity extends AppCompatActivity {
             }
         });
 
+        // Creates a linear layout for all messages and show them from bottom to start
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -77,14 +78,20 @@ public class MessageActivity extends AppCompatActivity {
         btn_send = findViewById(R.id.btn_send);
 
         intent = getIntent();
+
+        // Get the sender user id
         final String userid = intent.getStringExtra("userid");
+        // Get the logged in user
         fuser = FirebaseAuth.getInstance().getCurrentUser();
 
+        // When you click the button to send a message
         btn_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Get the message
                 String msg = text_send.getText().toString();
                 if (!msg.equals("")) {
+                    // Call send message function with your user id, your sender id and your message
                     sendMessage(fuser.getUid(), userid, msg);
                 }
                 else {
@@ -94,11 +101,15 @@ public class MessageActivity extends AppCompatActivity {
             }
         });
 
+        // Create a reference for users table
         reference = FirebaseDatabase.getInstance().getReference("Users").child(userid);
 
         reference.addValueEventListener(new ValueEventListener() {
+            // Read a static snapshot of the contents at a given path.
+            // This method is triggered once when the listener is attached and again every time the data, including children, changes
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // Get the user you selected
                 User user = dataSnapshot.getValue(User.class);
                 username.setText(user.getUsername());
                 if (user.getImageURL().equals("default")) {
@@ -107,7 +118,7 @@ public class MessageActivity extends AppCompatActivity {
                 else {
                     Glide.with(MessageActivity.this).load(user.getImageURL()).into(profile_image);
                 }
-
+                // Call read messages method
                 readMessages(fuser.getUid(), userid, user.getImageURL());
             }
 
@@ -118,6 +129,7 @@ public class MessageActivity extends AppCompatActivity {
         });
     }
 
+    // Create a new reference, add everything to a hash map and push it to Chats
     private void sendMessage(String sender, String receiver, String message) {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
 
@@ -129,6 +141,7 @@ public class MessageActivity extends AppCompatActivity {
         reference.child("Chats").push().setValue(hashMap);
     }
 
+    // Get chats reference, get Chat snapshot or get the changed snapshot
     private void readMessages(final String myid, final String userid, final String imageurl) {
         mChat = new ArrayList<>();
         reference = FirebaseDatabase.getInstance().getReference("Chats");
@@ -138,11 +151,13 @@ public class MessageActivity extends AppCompatActivity {
                 mChat.clear();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Chat chat = snapshot.getValue(Chat.class);
+                    // Add to chat list only messages between you and the sender
                     if (chat.getReceiver().equals(myid) && chat.getSender().equals(userid) ||
                         chat.getReceiver().equals(userid) && chat.getSender().equals(myid)) {
                         mChat.add(chat);
                     }
 
+                    // Create a new adapter and set it to our view
                     messageAdapter = new MessageAdapter(MessageActivity.this, mChat, imageurl);
                     recyclerView.setAdapter(messageAdapter);
                 }

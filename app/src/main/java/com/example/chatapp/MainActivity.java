@@ -74,9 +74,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Create tabs for chat and users
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         ViewPager viewPager = findViewById(R.id.view_pager);
 
+        // Handles the two fragments
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         viewPagerAdapter.addFragment(new ChatsFragment(), "Chats");
         viewPagerAdapter.addFragment(new UsersFragment(), "Users");
@@ -91,9 +93,11 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    // Selecting anything from navigation menu will trigger this method
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
+            // If you clicked log out got back to start activity and sign out from firebase too
             case R.id.logout:
                 FirebaseAuth.getInstance().signOut();
                 startActivity(new Intent(MainActivity.this, StartActivity.class));

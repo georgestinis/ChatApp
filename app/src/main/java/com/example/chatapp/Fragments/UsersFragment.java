@@ -45,6 +45,7 @@ public class UsersFragment extends Fragment {
         return view;
     }
 
+    // Get the current user and create a reference for every user
     private void readUsers() {
         final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
@@ -53,6 +54,7 @@ public class UsersFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 mUsers.clear();
+                // For every user except me add to list
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     User user = snapshot.getValue(User.class);
 
@@ -62,7 +64,7 @@ public class UsersFragment extends Fragment {
                         mUsers.add(user);
                     }
                 }
-
+                // Create a user adapter with the users
                 userAdapter = new UserAdapter(getContext(), mUsers);
                 recyclerView.setAdapter(userAdapter);
             }
