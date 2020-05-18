@@ -63,14 +63,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         }
 
         if (isChat) {
-            System.out.println("ena");
             lastMessage(user.getId(), holder.last_msg);
-        }
-        else {
-            holder.last_msg.setVisibility(View.GONE);
-        }
-
-        if (isChat) {
             if (user.getStatus().equals("online")) {
                 holder.img_on.setVisibility(View.VISIBLE);
                 holder.img_off.setVisibility(View.GONE);
@@ -81,6 +74,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
             }
         }
         else {
+            holder.last_msg.setVisibility(View.GONE);
             holder.img_on.setVisibility(View.GONE);
             holder.img_off.setVisibility(View.GONE);
         }
@@ -131,7 +125,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
                     boolean seen_msg = true;
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Chat chat = snapshot.getValue(Chat.class);
-                        // A bug here
                         if (chat.getReceiver().equals(firebaseUser.getUid()) && chat.getSender().equals(userid)) {
                             theLastMessage = chat.getMessage();
                             seen_msg = chat.isIsseen();
