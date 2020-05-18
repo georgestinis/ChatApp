@@ -103,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
             // If you clicked log out got back to start activity and sign out from firebase too
             case R.id.logout:
                 FirebaseAuth.getInstance().signOut();
+                System.out.println("geia");
                 startActivity(new Intent(MainActivity.this, StartActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
                 return true;
         }

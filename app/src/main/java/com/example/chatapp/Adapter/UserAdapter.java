@@ -63,6 +63,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         }
 
         if (isChat) {
+            System.out.println("ena");
             lastMessage(user.getId(), holder.last_msg);
         }
         else {
@@ -122,43 +123,43 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     private void lastMessage(final String userid, final TextView last_msg) {
         theLastMessage = "";
         final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Chats");
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                boolean seen_msg = true;
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Chat chat = snapshot.getValue(Chat.class);
-                    // A bug here
-                    assert firebaseUser != null;
-                    if (chat.getReceiver().equals(firebaseUser.getUid()) && chat.getSender().equals(userid)) {
-                        theLastMessage = chat.getMessage();
-                        seen_msg = chat.isIsseen();
-                    }
-                    else if (chat.getReceiver().equals(userid) && chat.getSender().equals(firebaseUser.getUid())) {
-                        theLastMessage = "You: " + chat.getMessage();
-                    }
-                }
-
-                switch (theLastMessage) {
-                    case "":
-                        last_msg.setText("No Message");
-                        break;
-                    default:
-                        last_msg.setText(theLastMessage);
-                        if (!seen_msg) {
-                            last_msg.setTypeface(null, Typeface.BOLD);
+        if (firebaseUser != null) {
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Chats");
+            reference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    boolean seen_msg = true;
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        Chat chat = snapshot.getValue(Chat.class);
+                        // A bug here
+                        if (chat.getReceiver().equals(firebaseUser.getUid()) && chat.getSender().equals(userid)) {
+                            theLastMessage = chat.getMessage();
+                            seen_msg = chat.isIsseen();
+                        } else if (chat.getReceiver().equals(userid) && chat.getSender().equals(firebaseUser.getUid())) {
+                            theLastMessage = "You: " + chat.getMessage();
                         }
-                        break;
+                    }
+
+                    switch (theLastMessage) {
+                        case "":
+                            last_msg.setText("No Message");
+                            break;
+                        default:
+                            last_msg.setText(theLastMessage);
+                            if (!seen_msg) {
+                                last_msg.setTypeface(null, Typeface.BOLD);
+                            }
+                            break;
+                    }
+
+                    theLastMessage = "";
                 }
 
-                theLastMessage = "";
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+                }
+            });
+        }
     }
 }
