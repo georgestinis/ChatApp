@@ -50,6 +50,17 @@
             android:layout_marginTop="10dp"
             android:id="@+id/btn_login"/>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:text="Forgot your password?"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:textColor="@color/toolbar"
+            android:textStyle="bold"
+            android:id="@+id/forgot_password"/>
+
     </LinearLayout>
 
 </RelativeLayout>
