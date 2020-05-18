@@ -51,6 +51,8 @@ public class MessageActivity extends AppCompatActivity {
 
     ValueEventListener seenListener;
 
+    String userid;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,7 +84,7 @@ public class MessageActivity extends AppCompatActivity {
         intent = getIntent();
 
         // Get the sender user id
-        final String userid = intent.getStringExtra("userid");
+        userid = intent.getStringExtra("userid");
         // Get the logged in user
         fuser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -166,6 +168,28 @@ public class MessageActivity extends AppCompatActivity {
         hashMap.put("isseen", false);
 
         reference.child("Chats").push().setValue(hashMap);
+
+        final DatabaseReference chatRef = FirebaseDatabase.getInstance().getReference("Chatlist")
+                .child(fuser.getUid())
+                .child(userid);
+
+        chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()) {
+                    chatRef.child("id").setValue(userid);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        final DatabaseReference chatRefReceiver = FirebaseDatabase.getInstance().getReference("Chatlist")
+                .child(userid)
+                .child(fuser.getUid());
+        chatRefReceiver.child("id").setValue(fuser.getUid());
     }
 
     // Get chats reference, get Chat snapshot or get the changed snapshot
