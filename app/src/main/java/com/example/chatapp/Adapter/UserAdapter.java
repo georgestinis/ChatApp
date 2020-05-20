@@ -61,7 +61,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         else {
             Glide.with(mContext).load(user.getImageURL()).into(holder.profile_image);
         }
-
+        // If the user is in Chat Fragment set his on/off img and call lastMessage method
         if (isChat) {
             lastMessage(user.getId(), holder.last_msg);
             if (user.getStatus().equals("online")) {
@@ -116,13 +116,16 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     // Check for last message
     private void lastMessage(final String userid, final TextView last_msg) {
         theLastMessage = "";
+        // Get the current user and if he/she is not null get Chats reference
         final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser != null) {
             DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Chats");
             reference.addValueEventListener(new ValueEventListener() {
+                // If something change in chats reference
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     boolean seen_msg = true;
+                    // For every chat get the message until it's the last
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Chat chat = snapshot.getValue(Chat.class);
                         if (chat.getReceiver().equals(firebaseUser.getUid()) && chat.getSender().equals(userid)) {
@@ -133,6 +136,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
                         }
                     }
 
+                    // Show the message in a text view and if it's not seen make it bold
                     switch (theLastMessage) {
                         case "":
                             last_msg.setText("No Message");

@@ -65,6 +65,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
         // Check if it's the last message
         if (position == mChat.size() - 1) {
+            // Check if the message is seen and se a text
             if (chat.isIsseen()) {
                 holder.txt_seen.setText("Seen");
             }

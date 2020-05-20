@@ -38,6 +38,7 @@ import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -62,9 +63,11 @@ public class ProfileFragment extends Fragment {
         image_profile = view.findViewById(R.id.profile_image);
         username = view.findViewById(R.id.username);
 
+        // Get a refernce from firebase storage
         storageReference = FirebaseStorage.getInstance().getReference("uploads");
 
         fuser = FirebaseAuth.getInstance().getCurrentUser();
+        // Get current's user id
         reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
 
         reference.addValueEventListener(new ValueEventListener() {
@@ -76,6 +79,7 @@ public class ProfileFragment extends Fragment {
                     image_profile.setImageResource(R.mipmap.ic_launcher);
                 }
                 else {
+                    // If the fragment is added to its activity and user has a image profile load it
                     if (isAdded()) {
                         Glide.with(getContext()).load(user.getImageURL()).into(image_profile);
                     }
@@ -88,6 +92,7 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+        // When you click the image call openImage method
         image_profile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -101,24 +106,30 @@ public class ProfileFragment extends Fragment {
     private void openImage() {
         Intent intent = new Intent();
         intent.setType("image/*");
+        // Allow the user to select a particular kind of data and return it
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(intent, IMAGE_REQUEST);
     }
 
+    // Get file extension
     private String getFileExtension(Uri uri) {
-        ContentResolver contentResolver = getContext().getContentResolver();
+        ContentResolver contentResolver = Objects.requireNonNull(getContext()).getContentResolver();
         MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
         return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
     }
 
     private void uploadImage() {
+        // Show a progress dialog with a message
         final ProgressDialog pd = new ProgressDialog(getContext());
         pd.setMessage("Uploading");
         pd.show();
 
+        // If imageUri has been initialized
         if (imageUri != null) {
+            // Set storage reference
             final StorageReference fileReference = storageReference.child(System.currentTimeMillis()
                     +"."+getFileExtension(imageUri));
+            // Upload the image to data base
             uploadTask = fileReference.putFile(imageUri);
             uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                 @Override
@@ -126,7 +137,7 @@ public class ProfileFragment extends Fragment {
                     if (!task.isSuccessful()) {
                         throw task.getException();
                     }
-
+                    // Return the image url
                     return fileReference.getDownloadUrl();
                 }
             }).addOnCompleteListener(new OnCompleteListener<Uri>() {
@@ -135,13 +146,13 @@ public class ProfileFragment extends Fragment {
                     if (task.isSuccessful()) {
                         Uri downloadUri = task.getResult();
                         String mUri = downloadUri.toString();
-
+                        // Put image url to users reference
                         reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
                         HashMap<String, Object> map = new HashMap<>();
                         map.put("imageURL", mUri);
                         reference.updateChildren(map);
-
-                        pd.dismiss();;
+                        // Close the progress dialog
+                        pd.dismiss();
                     }
                     else {
                         Toast.makeText(getContext(), "Failed!", Toast.LENGTH_SHORT).show();
@@ -161,17 +172,22 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+    // Receive the result from a previous call to startActivityForResult
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        // if requestCode is 1 and result code is -1 and there is some data (image selected)
         if (requestCode == IMAGE_REQUEST && resultCode == Activity.RESULT_OK
             && data != null && data.getData() != null) {
+            // Set imageUri with the given URI data
             imageUri = data.getData();
 
+            // If you already uploading show a toast message
             if (uploadTask != null && uploadTask.isInProgress()) {
                 Toast.makeText(getContext(), "Uploading in progress", Toast.LENGTH_SHORT).show();
             }
+            // Else call uploadImage
             else {
                 uploadImage();
             }

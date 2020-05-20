@@ -50,6 +50,7 @@ public class UsersFragment extends Fragment {
         readUsers();
 
         search_users = view.findViewById(R.id.search_users);
+        // Trigger this event every time you add a character
         search_users.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -58,6 +59,7 @@ public class UsersFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // When you change the text, call search users method
                 search_users(s.toString().toLowerCase());
             }
 
@@ -73,8 +75,10 @@ public class UsersFragment extends Fragment {
     private void search_users(String s) {
 
         final FirebaseUser fuser = FirebaseAuth.getInstance().getCurrentUser();
+        // Create a query from users reference and order by search value that starts with the given string
         Query query = FirebaseDatabase.getInstance().getReference("Users").orderByChild("search")
                 .startAt(s)
+                // \uf8ff is the last character in unicode so search everything that is less or equal than the given string plus this character
                 .endAt(s+"\uf8ff");
         query.addValueEventListener(new ValueEventListener() {
             @Override

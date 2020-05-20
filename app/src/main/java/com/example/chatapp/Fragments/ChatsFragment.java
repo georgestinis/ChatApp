@@ -52,6 +52,7 @@ public class ChatsFragment extends Fragment {
         usersList = new ArrayList<>();
 
         reference = FirebaseDatabase.getInstance().getReference("Chatlist").child(fuser.getUid());
+        // Get every user from chatlist reference
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -73,6 +74,7 @@ public class ChatsFragment extends Fragment {
         return view;
     }
 
+    // Show users with whom you have talked
     private void chatList() {
         mUsers = new ArrayList<>();
         reference = FirebaseDatabase.getInstance().getReference("Users");
@@ -80,6 +82,7 @@ public class ChatsFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 mUsers.clear();
+                // For every user check their id and if it matches with chatlist id add them to the list
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     User user = snapshot.getValue(User.class);
                     for (Chatlist chatlist : usersList) {
@@ -88,6 +91,7 @@ public class ChatsFragment extends Fragment {
                         }
                     }
                 }
+                // Show them with the recycler view
                 userAdapter = new UserAdapter(getContext(), mUsers, true);
                 recyclerView.setAdapter(userAdapter);
             }
