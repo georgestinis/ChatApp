@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseUser;
 // TODO ADD DELETE ON LONG PRESS
 // TODO CLEAR NOTIFICATIONS WHEN MESSAGE IS SEEN
 // TODO SEND IMAGES, VOICE MESSAGES
+// TODO ADD FRIENDS
 
 public class StartActivity extends AppCompatActivity {
 

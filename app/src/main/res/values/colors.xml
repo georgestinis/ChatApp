@@ -7,6 +7,6 @@
     <color name="teel_700">#018786</color>
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
-    <color name="toolbarDark">#226E6E</color>
-    <color name="toolbar">#3EAEAE</color>
+    <color name="toolbarDark">#AF2D23</color>
+    <color name="toolbar">#F44336</color>
 </resources>

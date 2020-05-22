@@ -19,6 +19,7 @@ import com.bumptech.glide.Glide;
 import com.example.chatapp.Adapter.MessageAdapter;
 import com.example.chatapp.Fragments.APIService;
 import com.example.chatapp.Model.Chat;
+import com.example.chatapp.Model.Chatlist;
 import com.example.chatapp.Model.User;
 import com.example.chatapp.Notifications.Client;
 import com.example.chatapp.Notifications.Data;
@@ -34,6 +35,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -187,15 +190,26 @@ public class MessageActivity extends AppCompatActivity {
 
         reference.child("Chats").push().setValue(hashMap);
 
+        final long time = System.currentTimeMillis();
         final DatabaseReference chatRef = FirebaseDatabase.getInstance().getReference("Chatlist")
                 .child(fuser.getUid())
                 .child(userid);
+        final DatabaseReference chatRefReceiver = FirebaseDatabase.getInstance().getReference("Chatlist")
+                .child(userid)
+                .child(fuser.getUid());
 
         chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
                     chatRef.child("id").setValue(userid);
+                    chatRef.child("time").setValue(time);
+                    chatRefReceiver.child("id").setValue(fuser.getUid());
+                    chatRefReceiver.child("time").setValue(time);
+                }
+                else {
+                    chatRef.child("time").setValue(time);
+                    chatRefReceiver.child("time").setValue(time);
                 }
             }
 
@@ -204,10 +218,7 @@ public class MessageActivity extends AppCompatActivity {
 
             }
         });
-        final DatabaseReference chatRefReceiver = FirebaseDatabase.getInstance().getReference("Chatlist")
-                .child(userid)
-                .child(fuser.getUid());
-        chatRefReceiver.child("id").setValue(fuser.getUid());
+
 
         final String msg = message;
 
