@@ -69,9 +69,6 @@ public class ChatsFragment extends Fragment {
                     usersList.push(chatlist);
                 }
                 Collections.reverse(usersList);
-                for (Chatlist c : usersList) {
-                    System.out.println(c.getId());
-                }
                 chatList();
             }
 
@@ -112,7 +109,6 @@ public class ChatsFragment extends Fragment {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         User user = snapshot.getValue(User.class);
                         if (user.getId().equals(chatlist.getId())) {
-                            System.out.println(user.getUsername());
                             mUsers.add(user);
                         }
                     }

@@ -10,7 +10,6 @@ import android.widget.Button;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-// TODO ORDER CHAT MESSAGES
 // TODO ADD GROUP CHAT
 // TODO ADD DELETE ON LONG PRESS
 // TODO CLEAR NOTIFICATIONS WHEN MESSAGE IS SEEN

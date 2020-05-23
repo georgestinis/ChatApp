@@ -6,7 +6,7 @@
         <item name="colorPrimaryDark">@color/toolbarDark</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teel_200</item>
+        <item name="colorSecondary">@color/toolbarDark</item>
         <item name="colorSecondaryVariant">@color/teel_700</item>
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
