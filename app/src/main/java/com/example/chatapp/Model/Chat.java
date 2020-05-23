@@ -6,12 +6,14 @@ public class Chat {
     private String receiver;
     private String message;
     private boolean isseen;
+    private String deletedfrom;
 
-    public Chat(String sender, String receiver, String message, boolean isseen) {
+    public Chat(String sender, String receiver, String message, boolean isseen, String deletedfrom) {
         this.sender = sender;
         this.receiver = receiver;
         this.message = message;
         this.isseen = isseen;
+        this.deletedfrom = deletedfrom;
     }
 
     public Chat() {
@@ -47,5 +49,13 @@ public class Chat {
 
     public void setIsseen(boolean isseen) {
         this.isseen = isseen;
+    }
+
+    public String getDeletedfrom() {
+        return deletedfrom;
+    }
+
+    public void setDeletedfrom(String deletedfrom) {
+        this.deletedfrom = deletedfrom;
     }
 }

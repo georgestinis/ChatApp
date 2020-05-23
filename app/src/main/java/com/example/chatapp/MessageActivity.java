@@ -163,10 +163,13 @@ public class MessageActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Chat chat = snapshot.getValue(Chat.class);
-                    if (chat.getReceiver().equals(fuser.getUid()) && chat.getSender().equals(userid)) {
-                        HashMap<String, Object> hashMap = new HashMap<>();
-                        hashMap.put("isseen", true);
-                        snapshot.getRef().updateChildren(hashMap);
+                    assert chat != null;
+                    if (chat.getReceiver() != null && chat.getSender() != null) {
+                        if (chat.getReceiver().equals(fuser.getUid()) && chat.getSender().equals(userid)) {
+                            HashMap<String, Object> hashMap = new HashMap<>();
+                            hashMap.put("isseen", true);
+                            snapshot.getRef().updateChildren(hashMap);
+                        }
                     }
                 }
             }
@@ -187,9 +190,9 @@ public class MessageActivity extends AppCompatActivity {
         hashMap.put("receiver", receiver);
         hashMap.put("message", message);
         hashMap.put("isseen", false);
+        hashMap.put("deletedfrom", "none");
 
         reference.child("Chats").push().setValue(hashMap);
-
         final long time = System.currentTimeMillis();
         final DatabaseReference chatRef = FirebaseDatabase.getInstance().getReference("Chatlist")
                 .child(fuser.getUid())
@@ -204,12 +207,9 @@ public class MessageActivity extends AppCompatActivity {
                 if (!dataSnapshot.exists()) {
                     chatRef.child("id").setValue(userid);
                     chatRef.child("time").setValue(time);
-                    chatRefReceiver.child("id").setValue(fuser.getUid());
-                    chatRefReceiver.child("time").setValue(time);
                 }
                 else {
                     chatRef.child("time").setValue(time);
-                    chatRefReceiver.child("time").setValue(time);
                 }
             }
 
@@ -219,6 +219,23 @@ public class MessageActivity extends AppCompatActivity {
             }
         });
 
+        chatRefReceiver.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()) {
+                    chatRefReceiver.child("id").setValue(fuser.getUid());
+                    chatRefReceiver.child("time").setValue(time);
+                }
+                else {
+                    chatRefReceiver.child("time").setValue(time);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         final String msg = message;
 
@@ -288,11 +305,15 @@ public class MessageActivity extends AppCompatActivity {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Chat chat = snapshot.getValue(Chat.class);
                     // Add to chat list only messages between you and the sender
-                    if (chat.getReceiver().equals(myid) && chat.getSender().equals(userid) ||
-                        chat.getReceiver().equals(userid) && chat.getSender().equals(myid)) {
-                        mChat.add(chat);
+                    assert chat != null;
+                    if (chat.getReceiver() != null && chat.getSender() != null) {
+                        if (chat.getReceiver().equals(myid) && chat.getSender().equals(userid) ||
+                                chat.getReceiver().equals(userid) && chat.getSender().equals(myid)) {
+                            if (chat.getDeletedfrom().equals("none") || chat.getDeletedfrom().equals(userid)) {
+                                mChat.add(chat);
+                            }
+                        }
                     }
-
                     // Create a new adapter and set it to our view
                     messageAdapter = new MessageAdapter(MessageActivity.this, mChat, imageurl);
                     recyclerView.setAdapter(messageAdapter);

@@ -138,6 +138,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
 
             menu.setHeaderTitle("Select an Option");
             menu.add(Menu.NONE, R.id.archiving, 0 , "Archive this conversation");
+            menu.add(Menu.NONE, R.id.deleting, 0 , "Delete this conversation");
 
         }
     }
@@ -157,11 +158,16 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
                     // For every chat get the message until it's the last
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Chat chat = snapshot.getValue(Chat.class);
-                        if (chat.getReceiver().equals(firebaseUser.getUid()) && chat.getSender().equals(userid)) {
-                            theLastMessage = chat.getMessage();
-                            seen_msg = chat.isIsseen();
-                        } else if (chat.getReceiver().equals(userid) && chat.getSender().equals(firebaseUser.getUid())) {
-                            theLastMessage = "You: " + chat.getMessage();
+                        assert chat != null;
+                        if (chat.getReceiver() != null && chat.getSender() != null) {
+                            if (chat.getReceiver().equals(firebaseUser.getUid()) && chat.getSender().equals(userid))
+                            {
+                                theLastMessage = chat.getMessage();
+                                seen_msg = chat.isIsseen();
+                            } else
+                            if (chat.getReceiver().equals(userid) && chat.getSender().equals(firebaseUser.getUid())) {
+                                theLastMessage = "You: " + chat.getMessage();
+                            }
                         }
                     }
 

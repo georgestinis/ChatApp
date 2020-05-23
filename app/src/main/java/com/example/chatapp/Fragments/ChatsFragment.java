@@ -34,6 +34,7 @@ import com.google.firebase.iid.InstanceIdResult;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 
@@ -140,12 +141,43 @@ public class ChatsFragment extends Fragment {
             Log.d(TAG, e.getLocalizedMessage(), e);
             return super.onContextItemSelected(item);
         }
-        User user = mUsers.get(position);
+        final User user = mUsers.get(position);
         switch (item.getItemId()) {
             case R.id.archiving:
                 FirebaseDatabase.getInstance().getReference("Chatlist").child(fuser.getUid()).child(user.getId()).removeValue();
                 break;
+            case R.id.deleting:
+                FirebaseDatabase.getInstance().getReference("Chatlist").child(fuser.getUid()).child(user.getId()).removeValue();
+                DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Chats");
+                reference.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for (DataSnapshot deleteSnapshot: dataSnapshot.getChildren()) {
+                            Chat chat = deleteSnapshot.getValue(Chat.class);
+                            assert chat != null;
+                            if (chat.getReceiver() != null && chat.getSender() != null) {
+                                if (chat.getReceiver().equals(fuser.getUid()) && chat.getSender().equals(user.getId()) ||
+                                        chat.getReceiver().equals(user.getId()) && chat.getSender().equals(fuser.getUid())) {
+                                    if (chat.getDeletedfrom().equals("none")) {
+                                        HashMap<String, Object> hashMap = new HashMap<>();
+                                        hashMap.put("deletedfrom", fuser.getUid());
+                                        deleteSnapshot.getRef().updateChildren(hashMap);
+                                    } else if (chat.getDeletedfrom().equals(user.getId())) {
+                                        deleteSnapshot.getRef().removeValue();
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+                break;
         }
         return super.onContextItemSelected(item);
     }
+
 }
