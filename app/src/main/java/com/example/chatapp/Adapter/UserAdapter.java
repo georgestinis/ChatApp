@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -34,6 +35,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
     private Context mContext;
     private List<User> mUsers;
     private boolean isChat;
+    private int position;
 
     String theLastMessage;
 
@@ -53,7 +55,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
 
     // Get each user show his username and image, on click open a chat room
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
         final User user = mUsers.get(position);
         holder.username.setText(user.getUsername());
 
@@ -81,6 +83,14 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
             holder.img_off.setVisibility(View.GONE);
         }
 
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                setPosition(holder.getAdapterPosition());
+                return false;
+            }
+        });
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -90,6 +100,12 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
                 mContext.startActivity(intent);
             }
         });
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull MyViewHolder holder) {
+        holder.itemView.setOnLongClickListener(null);
+        super.onViewRecycled(holder);
     }
 
     @Override
@@ -121,8 +137,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
         public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
 
             menu.setHeaderTitle("Select an Option");
-            menu.add(this.getAdapterPosition(), 101, 0 , "Archive this conversation");
-            menu.add(this.getAdapterPosition(), 102, 0 , "Delete this conversation");
+            menu.add(Menu.NONE, R.id.archiving, 0 , "Archive this conversation");
 
         }
     }
@@ -174,5 +189,12 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
         }
     }
 
-    private void
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
 }

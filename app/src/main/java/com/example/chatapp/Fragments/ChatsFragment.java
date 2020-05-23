@@ -7,9 +7,12 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.chatapp.Adapter.UserAdapter;
 import com.example.chatapp.Model.Chat;
@@ -33,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
+
+import static androidx.constraintlayout.widget.Constraints.TAG;
 
 public class ChatsFragment extends Fragment {
 
@@ -86,6 +91,7 @@ public class ChatsFragment extends Fragment {
             }
         });
 
+        registerForContextMenu(recyclerView);
 
         return view;
     }
@@ -125,5 +131,21 @@ public class ChatsFragment extends Fragment {
         });
     }
 
-
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        int position = -1;
+        try {
+            position = ((UserAdapter) recyclerView.getAdapter()).getPosition();
+        } catch (Exception e) {
+            Log.d(TAG, e.getLocalizedMessage(), e);
+            return super.onContextItemSelected(item);
+        }
+        User user = mUsers.get(position);
+        switch (item.getItemId()) {
+            case R.id.archiving:
+                FirebaseDatabase.getInstance().getReference("Chatlist").child(fuser.getUid()).child(user.getId()).removeValue();
+                break;
+        }
+        return super.onContextItemSelected(item);
+    }
 }

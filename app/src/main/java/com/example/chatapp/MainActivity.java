@@ -136,21 +136,6 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    @Override
-    public boolean onContextItemSelected(@NonNull MenuItem item) {
-
-        switch (item.getItemId()) {
-            case 101:
-                Toast.makeText(this, "Archiving this conversation", Toast.LENGTH_SHORT).show();
-                return true;
-            case 102:
-                Toast.makeText(this, "Deleting this conversation", Toast.LENGTH_SHORT).show();
-                return true;
-            default:
-                return super.onContextItemSelected(item);
-        }
-    }
-
     class ViewPagerAdapter extends FragmentPagerAdapter {
 
         private ArrayList<Fragment> fragments;
