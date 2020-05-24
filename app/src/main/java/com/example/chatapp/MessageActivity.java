@@ -162,14 +162,19 @@ public class MessageActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Chat chat = snapshot.getValue(Chat.class);
-                    assert chat != null;
-                    if (chat.getReceiver() != null && chat.getSender() != null) {
-                        if (chat.getReceiver().equals(fuser.getUid()) && chat.getSender().equals(userid)) {
-                            HashMap<String, Object> hashMap = new HashMap<>();
-                            hashMap.put("isseen", true);
-                            snapshot.getRef().updateChildren(hashMap);
+                    if (snapshot.hasChild("deletedfrom")) {
+                        Chat chat = snapshot.getValue(Chat.class);
+                        assert chat != null;
+                        if (chat.getReceiver() != null && chat.getSender() != null) {
+                            if (chat.getReceiver().equals(fuser.getUid()) && chat.getSender().equals(userid)) {
+                                HashMap<String, Object> hashMap = new HashMap<>();
+                                hashMap.put("isseen", true);
+                                snapshot.getRef().updateChildren(hashMap);
+                            }
                         }
+                    }
+                    else {
+                        snapshot.getRef().removeValue();
                     }
                 }
             }
