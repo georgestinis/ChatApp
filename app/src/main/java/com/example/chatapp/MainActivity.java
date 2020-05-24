@@ -57,64 +57,64 @@ public class MainActivity extends AppCompatActivity {
         username = findViewById(R.id.username);
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
 
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                username.setText(user.getUsername());
-                if (user.getImageURL().equals("default")){
-                    profile_image.setImageResource(R.mipmap.ic_launcher);
-                }
-                else {
-                    Glide.with(getApplicationContext()).load(user.getImageURL()).into(profile_image);
-                }
-            }
+        if (firebaseUser != null) {
+            reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-        // Create tabs
-        final TabLayout tabLayout = findViewById(R.id.tab_layout);
-        final ViewPager viewPager = findViewById(R.id.view_pager);
-
-        reference = FirebaseDatabase.getInstance().getReference("Chats");
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
-                int unread = 0;
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Chat chat = snapshot.getValue(Chat.class);
-                    assert chat != null;
-                    if (chat.getReceiver() != null && chat.getReceiver().equals(firebaseUser.getUid()) && !chat.isIsseen()) {
-                        unread++;
+            reference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    User user = dataSnapshot.getValue(User.class);
+                    username.setText(user.getUsername());
+                    if (user.getImageURL().equals("default")) {
+                        profile_image.setImageResource(R.mipmap.ic_launcher);
+                    } else {
+                        Glide.with(getApplicationContext()).load(user.getImageURL()).into(profile_image);
                     }
                 }
-                // Handles the fragments
-                if (unread == 0) {
-                    viewPagerAdapter.addFragment(new ChatsFragment(), "Chats");
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
                 }
-                else {
-                    viewPagerAdapter.addFragment(new ChatsFragment(), "("+unread+") Chats");
+            });
+
+            // Create tabs
+            final TabLayout tabLayout = findViewById(R.id.tab_layout);
+            final ViewPager viewPager = findViewById(R.id.view_pager);
+
+            reference = FirebaseDatabase.getInstance().getReference("Chats");
+            reference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+                    int unread = 0;
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        Chat chat = snapshot.getValue(Chat.class);
+                        assert chat != null;
+                        if (chat.getReceiver() != null && chat.getReceiver().equals(firebaseUser.getUid()) && !chat.isIsseen() && !chat.getDeletedfrom().equals(firebaseUser.getUid())) {
+                            unread++;
+                        }
+                    }
+                    // Handles the fragments
+                    if (unread == 0) {
+                        viewPagerAdapter.addFragment(new ChatsFragment(), "Chats");
+                    } else {
+                        viewPagerAdapter.addFragment(new ChatsFragment(), "(" + unread + ") Chats");
+                    }
+                    viewPagerAdapter.addFragment(new UsersFragment(), "Users");
+                    viewPagerAdapter.addFragment(new ProfileFragment(), "Profile");
+
+                    viewPager.setAdapter(viewPagerAdapter);
+                    tabLayout.setupWithViewPager(viewPager);
                 }
-                viewPagerAdapter.addFragment(new UsersFragment(), "Users");
-                viewPagerAdapter.addFragment(new ProfileFragment(), "Profile");
 
-                viewPager.setAdapter(viewPagerAdapter);
-                tabLayout.setupWithViewPager(viewPager);
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
+                }
+            });
+        }
 
     }
 
@@ -172,12 +172,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void status(String status) {
-        reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
+        if (firebaseUser != null) {
+            reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
 
-        HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("status", status);
+            HashMap<String, Object> hashMap = new HashMap<>();
+            hashMap.put("status", status);
 
-        reference.updateChildren(hashMap);
+            reference.updateChildren(hashMap);
+        }
     }
 
     @Override

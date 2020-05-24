@@ -75,66 +75,67 @@ public class UsersFragment extends Fragment {
     private void search_users(String s) {
 
         final FirebaseUser fuser = FirebaseAuth.getInstance().getCurrentUser();
-        // Create a query from users reference and order by search value that starts with the given string
-        Query query = FirebaseDatabase.getInstance().getReference("Users").orderByChild("search")
-                .startAt(s)
-                // \uf8ff is the last character in unicode so search everything that is less or equal than the given string plus this character
-                .endAt(s+"\uf8ff");
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                mUsers.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    User user = snapshot.getValue(User.class);
+        if (fuser != null) {
+            // Create a query from users reference and order by search value that starts with the given string
+            Query query = FirebaseDatabase.getInstance().getReference("Users").orderByChild("search")
+                    .startAt(s)
+                    // \uf8ff is the last character in unicode so search everything that is less or equal than the given string plus this character
+                    .endAt(s + "\uf8ff");
+            query.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    mUsers.clear();
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        User user = snapshot.getValue(User.class);
 
-                    assert user != null;
-                    assert fuser != null;
-                    if (!user.getId().equals(fuser.getUid())) {
-                        mUsers.add(user);
+                        assert user != null;
+                        if (!user.getId().equals(fuser.getUid())) {
+                            mUsers.add(user);
+                        }
                     }
+
+                    userAdapter = new UserAdapter(getContext(), mUsers, false);
+                    recyclerView.setAdapter(userAdapter);
                 }
 
-                userAdapter = new UserAdapter(getContext(), mUsers, false);
-                recyclerView.setAdapter(userAdapter);
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+                }
+            });
+        }
     }
 
     // Get the current user and create a reference for every user
     private void readUsers() {
         final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
+        if (firebaseUser != null) {
+            reference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (search_users.getText().toString().equals("")) {
+                        mUsers.clear();
+                        // For every user except me add to list
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            User user = snapshot.getValue(User.class);
 
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (search_users.getText().toString().equals("")) {
-                    mUsers.clear();
-                    // For every user except me add to list
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        User user = snapshot.getValue(User.class);
-
-                        assert firebaseUser != null;
-                        assert user != null;
-                        if (!user.getId().equals(firebaseUser.getUid())) {
-                            mUsers.add(user);
+                            assert user != null;
+                            if (!firebaseUser.getUid().equals(user.getId())) {
+                                mUsers.add(user);
+                            }
                         }
+                        // Create a user adapter with the users
+                        userAdapter = new UserAdapter(getContext(), mUsers, false);
+                        recyclerView.setAdapter(userAdapter);
                     }
-                    // Create a user adapter with the users
-                    userAdapter = new UserAdapter(getContext(), mUsers, false);
-                    recyclerView.setAdapter(userAdapter);
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
+                }
+            });
+        }
     }
 }

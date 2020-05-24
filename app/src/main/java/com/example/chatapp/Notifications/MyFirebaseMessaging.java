@@ -51,7 +51,12 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
         String body = remoteMessage.getData().get("body");
 
         RemoteMessage.Notification notification = remoteMessage.getNotification();
-        int j = Integer.parseInt(user.replaceAll("[\\D]", ""));
+        int j;
+        try {
+            j = Integer.parseInt(user.replaceAll("[\\D]", ""));
+        } catch (NumberFormatException ex) {
+            j = Integer.MAX_VALUE;
+        }
         Intent intent = new Intent(this, MessageActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString("userid", user);

@@ -64,26 +64,27 @@ public class ChatsFragment extends Fragment {
 
         usersList = new Stack<>();
 
-        Query reference1 = FirebaseDatabase.getInstance().getReference("Chatlist").child(fuser.getUid()).orderByChild("time");
-        // Get every user from chatlist reference
-        reference1.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                usersList.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Chatlist chatlist = snapshot.getValue(Chatlist.class);
-                    usersList.push(chatlist);
+        if (fuser != null) {
+            Query reference1 = FirebaseDatabase.getInstance().getReference("Chatlist").child(fuser.getUid()).orderByChild("time");
+            // Get every user from chatlist reference
+            reference1.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    usersList.clear();
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        Chatlist chatlist = snapshot.getValue(Chatlist.class);
+                        usersList.push(chatlist);
+                    }
+                    Collections.reverse(usersList);
+                    chatList();
                 }
-                Collections.reverse(usersList);
-                chatList();
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
-
+                }
+            });
+        }
         FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( getActivity(),  new OnSuccessListener<InstanceIdResult>() {
             @Override
             public void onSuccess(InstanceIdResult instanceIdResult) {
@@ -98,9 +99,11 @@ public class ChatsFragment extends Fragment {
     }
 
     private void updateToken(String token) {
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Tokens");
-        Token token1 = new Token(token);
-        reference.child(fuser.getUid()).setValue(token1);
+        if (fuser != null) {
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Tokens");
+            Token token1 = new Token(token);
+            reference.child(fuser.getUid()).setValue(token1);
+        }
     }
 
     // Show users with whom you have talked
@@ -115,7 +118,7 @@ public class ChatsFragment extends Fragment {
                 for (Chatlist chatlist : usersList) {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         User user = snapshot.getValue(User.class);
-                        if (user.getId().equals(chatlist.getId())) {
+                        if (chatlist.getId().equals(user.getId())) {
                             mUsers.add(user);
                         }
                     }
