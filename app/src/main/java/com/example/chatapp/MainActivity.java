@@ -14,12 +14,11 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.chatapp.Fragments.ChatsFragment;
 import com.example.chatapp.Fragments.ProfileFragment;
-import com.example.chatapp.Fragments.UsersFragment;
+import com.example.chatapp.Fragments.FriendsFragment;
 import com.example.chatapp.Model.Chat;
 import com.example.chatapp.Model.User;
 import com.google.android.material.tabs.TabLayout;
@@ -102,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         viewPagerAdapter.addFragment(new ChatsFragment(), "(" + unread + ") Chats");
                     }
-                    viewPagerAdapter.addFragment(new UsersFragment(), "Users");
+                    viewPagerAdapter.addFragment(new FriendsFragment(), "Users");
                     viewPagerAdapter.addFragment(new ProfileFragment(), "Profile");
 
                     viewPager.setAdapter(viewPagerAdapter);

@@ -139,6 +139,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
             menu.setHeaderTitle("Select an Option");
             menu.add(Menu.NONE, R.id.archiving, 0 , "Archive this conversation");
             menu.add(Menu.NONE, R.id.deleting, 0 , "Delete this conversation");
+            menu.add(Menu.NONE, R.id.del_friend, 0 , "Delete User");
 
         }
     }

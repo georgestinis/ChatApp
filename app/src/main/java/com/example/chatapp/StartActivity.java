@@ -11,7 +11,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 // TODO ADD GROUP CHAT
-// TODO ADD DELETE ON LONG PRESS
 // TODO CLEAR NOTIFICATIONS WHEN MESSAGE IS SEEN
 // TODO SEND IMAGES, VOICE MESSAGES
 // TODO ADD FRIENDS

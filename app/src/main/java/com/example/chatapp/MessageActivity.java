@@ -137,7 +137,7 @@ public class MessageActivity extends AppCompatActivity {
                 // Get the user you selected
                 User user = dataSnapshot.getValue(User.class);
                 username.setText(user.getUsername());
-                if (user.getImageURL().equals("default")) {
+                if ("default".equals(user.getImageURL())) {
                     profile_image.setImageResource(R.mipmap.ic_launcher);
                 }
                 else {
@@ -198,6 +198,44 @@ public class MessageActivity extends AppCompatActivity {
         hashMap.put("deletedfrom", "none");
 
         reference.child("Chats").push().setValue(hashMap);
+
+        final DatabaseReference friendsRef = FirebaseDatabase.getInstance().getReference("Friends")
+                .child(fuser.getUid())
+                .child(userid);
+        final DatabaseReference friendsRefReceiver = FirebaseDatabase.getInstance().getReference("Friends")
+                .child(userid)
+                .child(fuser.getUid());
+
+        friendsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()) {
+                    friendsRef.child("id").setValue(userid);
+                }
+                return;
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        friendsRefReceiver.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()) {
+                    friendsRefReceiver.child("id").setValue(fuser.getUid());
+                }
+                return;
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
         final long time = System.currentTimeMillis();
         final DatabaseReference chatRef = FirebaseDatabase.getInstance().getReference("Chatlist")
                 .child(fuser.getUid())

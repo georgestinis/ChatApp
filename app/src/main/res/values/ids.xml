@@ -2,4 +2,5 @@
 <resources>
     <item name="archiving" type="id"/>
     <item name="deleting" type="id"/>
+    <item name="del_friend" type="id" />
 </resources>

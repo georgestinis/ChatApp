@@ -3,10 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Fragments.UsersFragment">
+    tools:context=".Fragments.FriendsFragment">
 
     <EditText
-        android:id="@+id/search_users"
+        android:id="@+id/search_friends"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
@@ -16,6 +16,6 @@
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/search_users" />
+        android:layout_below="@+id/search_friends" />
 
 </RelativeLayout>
