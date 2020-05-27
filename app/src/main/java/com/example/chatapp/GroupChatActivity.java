@@ -1,4 +1,9 @@
-package com.example.chatapp.Fragments;
+package com.example.chatapp;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -7,22 +12,17 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import android.provider.MediaStore;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.chatapp.Model.User;
-import com.example.chatapp.R;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -46,60 +46,58 @@ import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class ProfileFragment extends Fragment {
+public class GroupChatActivity extends AppCompatActivity {
 
-    CircleImageView image_profile;
-    TextView username;
-
-    DatabaseReference reference;
     FirebaseUser fuser;
 
-    StorageReference storageReference;
     private static final int IMAGE_REQUEST = 1;
     private Uri imageUri;
     private StorageTask uploadTask;
+    private StorageReference storageReference;
+
+    private ImageView groupIcon;
+    private EditText groupTitle, groupDesc;
+    private Button groupBtn;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_group_chat);
+        Toolbar toolbar = findViewById(R.id.toolbar);
 
-        image_profile = view.findViewById(R.id.profile_image);
-        username = view.findViewById(R.id.username);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Create Group Chat");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(GroupChatActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+            }
+        });
+
+        groupIcon = findViewById(R.id.groupIcon);
+        groupTitle = findViewById(R.id.groupTitle);
+        groupDesc = findViewById(R.id.groupDesc);
+        groupBtn = findViewById(R.id.createGroupBtn);
 
         // Get a refernce from firebase storage
         storageReference = FirebaseStorage.getInstance().getReference("uploads");
 
         fuser = FirebaseAuth.getInstance().getCurrentUser();
-        // Get current's user id
-        reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
+        if (fuser != null) {
+            getSupportActionBar().setSubtitle(fuser.getDisplayName());
+        }
 
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                username.setText(user.getUsername());
-                if ("default".equals(user.getImageURL())) {
-                    image_profile.setImageResource(R.mipmap.ic_launcher);
-                }
-                else {
-                    // If the fragment is added to its activity and user has a image profile load it
-                    if (isAdded()) {
-                        Glide.with(getContext()).load(user.getImageURL()).into(image_profile);
-                    }
-                }
-            }
+        groupIcon.setOnClickListener(v -> openImage());
 
+        groupBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+            public void onClick(View v) {
 
             }
         });
 
-        // When you click the image call openImage method
-        image_profile.setOnClickListener(v -> openImage());
-
-        return view;
     }
 
     private void openImage() {
@@ -112,14 +110,14 @@ public class ProfileFragment extends Fragment {
 
     // Get file extension
     private String getFileExtension(Uri uri) {
-        ContentResolver contentResolver = Objects.requireNonNull(getContext()).getContentResolver();
+        ContentResolver contentResolver = Objects.requireNonNull(GroupChatActivity.this).getContentResolver();
         MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
         return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
     }
 
     private void uploadImage() throws IOException {
         // Show a progress dialog with a message
-        final ProgressDialog pd = new ProgressDialog(getContext());
+        final ProgressDialog pd = new ProgressDialog(GroupChatActivity.this);
         pd.setMessage("Uploading");
         pd.show();
 
@@ -130,7 +128,7 @@ public class ProfileFragment extends Fragment {
                     +"."+getFileExtension(imageUri));
 
             // Compress the image
-            Bitmap bmp = MediaStore.Images.Media.getBitmap(Objects.requireNonNull(getContext()).getContentResolver(), imageUri);
+            Bitmap bmp = MediaStore.Images.Media.getBitmap(Objects.requireNonNull(GroupChatActivity.this).getContentResolver(), imageUri);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bmp.compress(Bitmap.CompressFormat.JPEG, 15, baos);
             byte[] data = baos.toByteArray();
@@ -152,31 +150,32 @@ public class ProfileFragment extends Fragment {
                 @Override
                 public void onComplete(@NonNull Task<Uri> task) {
                     if (task.isSuccessful()) {
-                        Uri downloadUri = task.getResult();
-                        String mUri = downloadUri.toString();
-                        // Put image url to users reference
-                        reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
-                        HashMap<String, Object> map = new HashMap<>();
-                        map.put("imageURL", mUri);
-                        reference.updateChildren(map);
+//                        Uri downloadUri = task.getResult();
+//                        String mUri = downloadUri.toString();
+//                        // Put image url to users reference
+//                        reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
+//                        HashMap<String, Object> map = new HashMap<>();
+//                        map.put("imageURL", mUri);
+//                        reference.updateChildren(map);
                         // Close the progress dialog
+                        Toast.makeText(GroupChatActivity.this, "Success!", Toast.LENGTH_SHORT).show();
                         pd.dismiss();
                     }
                     else {
-                        Toast.makeText(getContext(), "Failed!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(GroupChatActivity.this, "Failed!", Toast.LENGTH_SHORT).show();
                         pd.dismiss();
                     }
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(GroupChatActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                     pd.dismiss();
                 }
             });
         }
         else {
-            Toast.makeText(getContext(), "No Image Selected", Toast.LENGTH_SHORT).show();
+            Toast.makeText(GroupChatActivity.this, "No Image Selected", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -187,13 +186,13 @@ public class ProfileFragment extends Fragment {
 
         // if requestCode is 1 and result code is -1 and there is some data (image selected)
         if (requestCode == IMAGE_REQUEST && resultCode == Activity.RESULT_OK
-            && data != null && data.getData() != null) {
+                && data != null && data.getData() != null) {
             // Set imageUri with the given URI data
             imageUri = data.getData();
 
             // If you already uploading show a toast message
             if (uploadTask != null && uploadTask.isInProgress()) {
-                Toast.makeText(getContext(), "Uploading in progress", Toast.LENGTH_SHORT).show();
+                Toast.makeText(GroupChatActivity.this, "Uploading in progress", Toast.LENGTH_SHORT).show();
             }
             // Else call uploadImage
             else {

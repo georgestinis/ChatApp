@@ -13,7 +13,8 @@ import com.google.firebase.auth.FirebaseUser;
 // TODO ADD GROUP CHAT
 // TODO CLEAR NOTIFICATIONS WHEN MESSAGE IS SEEN
 // TODO SEND IMAGES, VOICE MESSAGES
-// TODO ADD FRIENDS
+// TODO DELETE FRIENDS
+// TODO FRIENDS FRAGMENT ON LONG PRESS MENU
 
 public class StartActivity extends AppCompatActivity {
 
