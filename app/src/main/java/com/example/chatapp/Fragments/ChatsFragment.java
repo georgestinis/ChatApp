@@ -149,12 +149,12 @@ public class ChatsFragment extends Fragment {
             return super.onContextItemSelected(item);
         }
         final User user = mUsers.get(position);
+        final FirebaseUser fuser = FirebaseAuth.getInstance().getCurrentUser();
         switch (item.getItemId()) {
-            case R.id.archiving:
-                FirebaseDatabase.getInstance().getReference("Chatlist").child(fuser.getUid()).child(user.getId()).removeValue();
-                break;
+            case R.id.del_friend:
+                FirebaseDatabase.getInstance().getReference("Friends").child(fuser.getUid()).child(user.getId()).removeValue();
+                FirebaseDatabase.getInstance().getReference("Friends").child(user.getId()).child(fuser.getUid()).removeValue();
             case R.id.deleting:
-                FirebaseDatabase.getInstance().getReference("Chatlist").child(fuser.getUid()).child(user.getId()).removeValue();
                 DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Chats");
                 reference.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -182,7 +182,10 @@ public class ChatsFragment extends Fragment {
 
                     }
                 });
+            case R.id.archiving:
+                FirebaseDatabase.getInstance().getReference("Chatlist").child(fuser.getUid()).child(user.getId()).removeValue();
                 break;
+
         }
         return super.onContextItemSelected(item);
     }

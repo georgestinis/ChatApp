@@ -125,7 +125,7 @@ public class FriendsFragment extends Fragment {
         final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Friends").child(firebaseUser.getUid());
         if (firebaseUser != null) {
-            reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            reference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
                     allUsers.clear();
@@ -168,53 +168,56 @@ public class FriendsFragment extends Fragment {
             });
         }
     }
-//
-//    @Override
-//    public boolean onContextItemSelected(@NonNull MenuItem item) {
-//        int position = -1;
-//        try {
-//            position = ((UserAdapter) recyclerView.getAdapter()).getPosition();
-//        } catch (Exception e) {
-//            Log.d(TAG, e.getLocalizedMessage(), e);
-//            return super.onContextItemSelected(item);
-//        }
-//        final User user = mUsers.get(position);
-//        switch (item.getItemId()) {
-//            case R.id.archiving:
-//                FirebaseDatabase.getInstance().getReference("Chatlist").child(fuser.getUid()).child(user.getId()).removeValue();
-//                break;
-//            case R.id.deleting:
-//                FirebaseDatabase.getInstance().getReference("Chatlist").child(fuser.getUid()).child(user.getId()).removeValue();
-//                DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Chats");
-//                reference.addListenerForSingleValueEvent(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                        for (DataSnapshot deleteSnapshot: dataSnapshot.getChildren()) {
-//                            Chat chat = deleteSnapshot.getValue(Chat.class);
-//                            assert chat != null;
-//                            if (chat.getReceiver() != null && chat.getSender() != null) {
-//                                if (chat.getReceiver().equals(fuser.getUid()) && chat.getSender().equals(user.getId()) ||
-//                                        chat.getReceiver().equals(user.getId()) && chat.getSender().equals(fuser.getUid())) {
-//                                    if (chat.getDeletedfrom().equals("none")) {
-//                                        HashMap<String, Object> hashMap = new HashMap<>();
-//                                        hashMap.put("deletedfrom", fuser.getUid());
-//                                        deleteSnapshot.getRef().updateChildren(hashMap);
-//                                    } else if (chat.getDeletedfrom().equals(user.getId())) {
-//                                        deleteSnapshot.getRef().removeValue();
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                    }
-//                });
-//                break;
-//        }
-//        return super.onContextItemSelected(item);
-//    }
+
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        int position = -1;
+        try {
+            position = ((UserAdapter) recyclerView.getAdapter()).getPosition();
+        } catch (Exception e) {
+            Log.d(TAG, e.getLocalizedMessage(), e);
+            return super.onContextItemSelected(item);
+        }
+        final User user = allUsers.get(position);
+        final FirebaseUser fuser = FirebaseAuth.getInstance().getCurrentUser();
+        switch (item.getItemId()) {
+            case R.id.del_friend:
+                FirebaseDatabase.getInstance().getReference("Friends").child(fuser.getUid()).child(user.getId()).removeValue();
+                FirebaseDatabase.getInstance().getReference("Friends").child(user.getId()).child(fuser.getUid()).removeValue();
+            case R.id.deleting:
+                DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Chats");
+                reference.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for (DataSnapshot deleteSnapshot: dataSnapshot.getChildren()) {
+                            Chat chat = deleteSnapshot.getValue(Chat.class);
+                            assert chat != null;
+                            if (chat.getReceiver() != null && chat.getSender() != null) {
+                                if (chat.getReceiver().equals(fuser.getUid()) && chat.getSender().equals(user.getId()) ||
+                                        chat.getReceiver().equals(user.getId()) && chat.getSender().equals(fuser.getUid())) {
+                                    if (chat.getDeletedfrom().equals("none")) {
+                                        HashMap<String, Object> hashMap = new HashMap<>();
+                                        hashMap.put("deletedfrom", fuser.getUid());
+                                        deleteSnapshot.getRef().updateChildren(hashMap);
+                                    } else if (chat.getDeletedfrom().equals(user.getId())) {
+                                        deleteSnapshot.getRef().removeValue();
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+            case R.id.archiving:
+                FirebaseDatabase.getInstance().getReference("Chatlist").child(fuser.getUid()).child(user.getId()).removeValue();
+                break;
+
+        }
+        return super.onContextItemSelected(item);
+    }
 
 }
