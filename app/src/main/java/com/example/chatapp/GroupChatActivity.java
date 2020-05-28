@@ -123,7 +123,7 @@ public class GroupChatActivity extends AppCompatActivity {
         progressDialog.show();
 
         if (imageUri == null) {
-            createGroup(groupTitle, "");
+            createGroup(groupTitle, "default");
         } else {
             final StorageReference fileReference = storageReference.child(System.currentTimeMillis()
                     + "." + getFileExtension(imageUri));

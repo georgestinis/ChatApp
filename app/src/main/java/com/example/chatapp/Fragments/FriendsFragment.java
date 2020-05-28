@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,7 +45,7 @@ public class FriendsFragment extends Fragment {
     private UserAdapter userAdapter;
     private List<User> allUsers;
 
-    EditText search_users;
+    private EditText search_users;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -69,7 +70,12 @@ public class FriendsFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // When you change the text, call search users method
-                search_users(s.toString().toLowerCase());
+                if (!TextUtils.isEmpty(s.toString().trim())) {
+                    search_users(s.toString().toLowerCase());
+                }
+                else {
+                    readUsers();
+                }
             }
 
             @Override
@@ -86,10 +92,7 @@ public class FriendsFragment extends Fragment {
         final FirebaseUser fuser = FirebaseAuth.getInstance().getCurrentUser();
         if (fuser != null) {
             // Create a query from users reference and order by search value that starts with the given string
-            Query query = FirebaseDatabase.getInstance().getReference("Users").orderByChild("search")
-                    .startAt(s)
-                    // \uf8ff is the last character in unicode so search everything that is less or equal than the given string plus this character
-                    .endAt(s + "\uf8ff");
+            Query query = FirebaseDatabase.getInstance().getReference("Users").orderByChild("search");
             query.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -99,7 +102,9 @@ public class FriendsFragment extends Fragment {
 
                         assert user != null;
                         if (!user.getId().equals(fuser.getUid())) {
-                            allUsers.add(user);
+                            if (snapshot.child("search").toString().toLowerCase().contains(s.toLowerCase())) {
+                                allUsers.add(user);
+                            }
                         }
                     }
 
@@ -120,43 +125,39 @@ public class FriendsFragment extends Fragment {
         final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Friends").child(firebaseUser.getUid());
         if (firebaseUser != null) {
-            reference.addValueEventListener(new ValueEventListener() {
+            reference.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
-                    if ("".equals(search_users.getText().toString())) {
-                        allUsers.clear();
-                        // For every user except me add to list
-                        final Iterator<DataSnapshot> iterator = dataSnapshot.getChildren().iterator();
-                        while (iterator.hasNext()) {
-                            final Friend friend = iterator.next().getValue(Friend.class);
-                            System.out.println(friend.getId());
-                            assert friend != null;
-                            Query query = FirebaseDatabase.getInstance().getReference("Users").orderByChild("id").equalTo(friend.getId());
-                            query.addListenerForSingleValueEvent(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot1) {
-                                    for (DataSnapshot snapshot1 : dataSnapshot1.getChildren()) {
-                                        User user = snapshot1.getValue(User.class);
-                                        assert friend != null;
-                                        if (!firebaseUser.getUid().equals(user.getId())) {
+                    allUsers.clear();
+                    // For every user except me add to list
+                    final Iterator<DataSnapshot> iterator = dataSnapshot.getChildren().iterator();
+                    while (iterator.hasNext()) {
+                        final Friend friend = iterator.next().getValue(Friend.class);
+                        assert friend != null;
+                        Query query = FirebaseDatabase.getInstance().getReference("Users").orderByChild("id").equalTo(friend.getId());
+                        query.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot1) {
+                                for (DataSnapshot snapshot1 : dataSnapshot1.getChildren()) {
+                                    User user = snapshot1.getValue(User.class);
+                                    assert friend != null;
+                                    if (!firebaseUser.getUid().equals(user.getId())) {
+                                        if(!allUsers.contains(user)) {
                                             allUsers.add(user);
                                         }
                                     }
-                                    if (!iterator.hasNext()) {
-                                        System.out.println("Geia1");
-                                        userAdapter = new UserAdapter(getContext(), allUsers, false);
-                                        recyclerView.setAdapter(userAdapter);
-                                    }
                                 }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                                if (!iterator.hasNext()) {
+                                    userAdapter = new UserAdapter(getContext(), allUsers, false);
+                                    recyclerView.setAdapter(userAdapter);
                                 }
-                            });
-                        }
-                        // Create a user adapter with the users
+                            }
 
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
                     }
                 }
 

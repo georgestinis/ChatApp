@@ -57,4 +57,12 @@ public class User {
     public void setSearch(String search) {
         this.search = search;
     }
+
+    @Override
+    public boolean equals(Object obj){
+        if(obj instanceof User){
+            return ((User) obj).getId().equals(this.getId());
+        }
+        return false;
+    }
 }

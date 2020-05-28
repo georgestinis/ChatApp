@@ -12,10 +12,13 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">@color/toolbarDark</item>
         <!-- Customize your theme here. -->
+        <item name="actionOverflowMenuStyle">@style/MenuStyle</item>
     </style>
 
     <style name="MenuStyle" parent="Theme.MaterialComponents.DayNight">
-        <item name="android:background">@android:color/white</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="overlapAnchor">false</item>
+        <item name="android:dropDownVerticalOffset">5.0dp</item>
     </style>
 
 </resources>

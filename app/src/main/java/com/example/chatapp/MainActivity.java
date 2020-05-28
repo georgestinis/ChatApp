@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.chatapp.Fragments.ChatsFragment;
+import com.example.chatapp.Fragments.GroupsFragment;
 import com.example.chatapp.Fragments.ProfileFragment;
 import com.example.chatapp.Fragments.FriendsFragment;
 import com.example.chatapp.Model.Chat;
@@ -101,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         viewPagerAdapter.addFragment(new ChatsFragment(), "(" + unread + ") Chats");
                     }
+                    viewPagerAdapter.addFragment(new GroupsFragment(), "Groups");
                     viewPagerAdapter.addFragment(new FriendsFragment(), "Users");
                     viewPagerAdapter.addFragment(new ProfileFragment(), "Profile");
 
