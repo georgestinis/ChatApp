@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.chatapp.GroupMessageActivity;
 import com.example.chatapp.MessageActivity;
 import com.example.chatapp.Model.Group;
 import com.example.chatapp.R;
@@ -50,7 +51,9 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.MyViewHolder
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO
+                Intent intent = new Intent(mContext, GroupMessageActivity.class);
+                intent.putExtra("groupId", group.getGroupId());
+                mContext.startActivity(intent);
             }
         });
     }
