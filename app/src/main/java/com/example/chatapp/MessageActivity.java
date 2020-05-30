@@ -19,7 +19,6 @@ import com.bumptech.glide.Glide;
 import com.example.chatapp.Adapter.MessageAdapter;
 import com.example.chatapp.Fragments.APIService;
 import com.example.chatapp.Model.Chat;
-import com.example.chatapp.Model.Chatlist;
 import com.example.chatapp.Model.User;
 import com.example.chatapp.Notifications.Client;
 import com.example.chatapp.Notifications.Data;
@@ -35,8 +34,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,28 +45,28 @@ import retrofit2.Response;
 
 public class MessageActivity extends AppCompatActivity {
 
-    CircleImageView profile_image;
-    TextView username;
+    private CircleImageView profile_image;
+    private TextView username;
 
-    ImageButton btn_send;
-    EditText text_send;
+    private ImageButton btn_send;
+    private EditText text_send;
 
-    FirebaseUser fuser;
-    DatabaseReference reference;
-    Intent intent;
+    private FirebaseUser fuser;
+    private DatabaseReference reference;
+    private Intent intent;
 
-    MessageAdapter messageAdapter;
-    List<Chat> mChat;
+    private MessageAdapter messageAdapter;
+    private List<Chat> mChat;
 
-    RecyclerView recyclerView;
+    private RecyclerView recyclerView;
 
-    ValueEventListener seenListener;
+    private ValueEventListener seenListener;
 
-    String userid;
+    private String userid;
 
-    APIService apiService;
+    private APIService apiService;
 
-    boolean notify = false;
+    private boolean notify = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,6 +123,12 @@ public class MessageActivity extends AppCompatActivity {
             }
         });
 
+        loadChatInfo();
+
+        seenMessage(userid);
+    }
+
+    private void loadChatInfo() {
         // Create a reference for users table
         reference = FirebaseDatabase.getInstance().getReference("Users").child(userid);
 
@@ -152,8 +155,6 @@ public class MessageActivity extends AppCompatActivity {
 
             }
         });
-
-        seenMessage(userid);
     }
 
     private void seenMessage(final String userid) {
@@ -200,17 +201,17 @@ public class MessageActivity extends AppCompatActivity {
         reference.child("Chats").push().setValue(hashMap);
 
         final DatabaseReference friendsRef = FirebaseDatabase.getInstance().getReference("Friends")
-                .child(fuser.getUid())
-                .child(userid);
+                .child(sender)
+                .child(receiver);
         final DatabaseReference friendsRefReceiver = FirebaseDatabase.getInstance().getReference("Friends")
-                .child(userid)
-                .child(fuser.getUid());
+                .child(receiver)
+                .child(sender);
 
         friendsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
-                    friendsRef.child("id").setValue(userid);
+                    friendsRef.child("id").setValue(receiver);
                 }
                 return;
             }
@@ -225,7 +226,7 @@ public class MessageActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
-                    friendsRefReceiver.child("id").setValue(fuser.getUid());
+                    friendsRefReceiver.child("id").setValue(sender);
                 }
                 return;
             }
@@ -238,17 +239,17 @@ public class MessageActivity extends AppCompatActivity {
 
         final long time = System.currentTimeMillis();
         final DatabaseReference chatRef = FirebaseDatabase.getInstance().getReference("Chatlist")
-                .child(fuser.getUid())
-                .child(userid);
+                .child(sender)
+                .child(receiver);
         final DatabaseReference chatRefReceiver = FirebaseDatabase.getInstance().getReference("Chatlist")
-                .child(userid)
-                .child(fuser.getUid());
+                .child(receiver)
+                .child(sender);
 
         chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
-                    chatRef.child("id").setValue(userid);
+                    chatRef.child("id").setValue(receiver);
                     chatRef.child("time").setValue(time);
                 }
                 else {
@@ -266,7 +267,7 @@ public class MessageActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
-                    chatRefReceiver.child("id").setValue(fuser.getUid());
+                    chatRefReceiver.child("id").setValue(sender);
                     chatRefReceiver.child("time").setValue(time);
                 }
                 else {
@@ -282,7 +283,7 @@ public class MessageActivity extends AppCompatActivity {
 
         final String msg = message;
 
-        reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
+        reference = FirebaseDatabase.getInstance().getReference("Users").child(sender);
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -338,7 +339,7 @@ public class MessageActivity extends AppCompatActivity {
     }
 
     // Get chats reference, get Chat snapshot or get the changed snapshot
-    private void readMessages(final String myid, final String userid, final String imageurl) {
+    private void readMessages(final String myId, final String userid, final String imageurl) {
         mChat = new ArrayList<>();
         reference = FirebaseDatabase.getInstance().getReference("Chats");
         reference.addValueEventListener(new ValueEventListener() {
@@ -350,17 +351,17 @@ public class MessageActivity extends AppCompatActivity {
                     // Add to chat list only messages between you and the sender
                     assert chat != null;
                     if (chat.getReceiver() != null && chat.getSender() != null) {
-                        if (chat.getReceiver().equals(myid) && chat.getSender().equals(userid) ||
-                                chat.getReceiver().equals(userid) && chat.getSender().equals(myid)) {
+                        if (chat.getReceiver().equals(myId) && chat.getSender().equals(userid) ||
+                                chat.getReceiver().equals(userid) && chat.getSender().equals(myId)) {
                             if (chat.getDeletedfrom().equals("none") || chat.getDeletedfrom().equals(userid)) {
                                 mChat.add(chat);
                             }
                         }
                     }
-                    // Create a new adapter and set it to our view
-                    messageAdapter = new MessageAdapter(MessageActivity.this, mChat, imageurl);
-                    recyclerView.setAdapter(messageAdapter);
                 }
+                // Create a new adapter and set it to our view
+                messageAdapter = new MessageAdapter(MessageActivity.this, mChat, imageurl);
+                recyclerView.setAdapter(messageAdapter);
             }
 
             @Override

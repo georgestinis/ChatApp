@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.chatapp.GroupMessageActivity;
-import com.example.chatapp.MessageActivity;
 import com.example.chatapp.Model.Group;
 import com.example.chatapp.R;
 
@@ -42,10 +41,10 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.MyViewHolder
         holder.group_title.setText(group.getGroupTitle());
 
         if ("default".equals(group.getGroupIcon())) {
-            holder.profile_image.setImageResource(R.drawable.ic_group_primary);
+            holder.group_icon.setImageResource(R.drawable.ic_group_primary);
         }
         else {
-            Glide.with(mContext).load(group.getGroupIcon()).into(holder.profile_image);
+            Glide.with(mContext).load(group.getGroupIcon()).into(holder.group_icon);
         }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -66,13 +65,13 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.MyViewHolder
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
         public TextView group_title;
-        public ImageView profile_image;
+        public ImageView group_icon;
         private TextView last_msg;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             group_title = itemView.findViewById(R.id.group_title);
-            profile_image = itemView.findViewById(R.id.profile_image);
+            group_icon = itemView.findViewById(R.id.group_icon);
             last_msg = itemView.findViewById(R.id.last_msg);
         }
 

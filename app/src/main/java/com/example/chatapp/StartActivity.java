@@ -10,11 +10,12 @@ import android.widget.Button;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-// TODO ADD GROUP CHAT
 // TODO CLEAR NOTIFICATIONS WHEN MESSAGE IS SEEN
 // TODO SEND IMAGES, VOICE MESSAGES
-// TODO DELETE FRIENDS
-// TODO FRIENDS FRAGMENT ON LONG PRESS MENU
+// TODO MAKE DIFFERENT XML FOR USERS AND FOR CHATLIST
+// TODO GET CHATS INSIDE CHATLIST
+// TODO MESSAGE TIME
+// TODO PRIVATE ALL VARIABLES
 
 public class StartActivity extends AppCompatActivity {
 

@@ -27,12 +27,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
     private List<Chat> mChat;
     private String imageurl;
 
-    FirebaseUser fuser;
+    private FirebaseUser fuser;
 
     public MessageAdapter(Context mContext, List<Chat> mChat, String imageurl) {
         this.mContext = mContext;
         this.mChat = mChat;
         this.imageurl = imageurl;
+        fuser = FirebaseAuth.getInstance().getCurrentUser();
     }
 
     @NonNull
@@ -87,7 +88,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
 
         public TextView show_message;
         public ImageView profile_image;
-
         public TextView txt_seen;
 
         public MyViewHolder(@NonNull View itemView) {
@@ -100,7 +100,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
 
     @Override
     public int getItemViewType(int position) {
-        fuser = FirebaseAuth.getInstance().getCurrentUser();
         // If i'm the sender show message on right else show it on left
         if (mChat.get(position).getSender().equals(fuser.getUid())) {
             return  MSG_TYPE_RIGHT;
