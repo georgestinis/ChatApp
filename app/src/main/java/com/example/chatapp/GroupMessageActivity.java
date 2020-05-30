@@ -115,6 +115,8 @@ public class GroupMessageActivity extends AppCompatActivity {
         hashMap.put("message", msg);
         hashMap.put("time", time);
 
+        reference.child(groupId).child("time").setValue(time);
+
         reference.child(groupId).child("Messages").child(time+"").setValue(hashMap)
         .addOnFailureListener(e -> Toast.makeText(GroupMessageActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show());
 
