@@ -60,20 +60,6 @@ public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapte
 
         holder.show_message.setText(groupChat.getMessage());
         setUserName(groupChat ,holder);
-
-//        // Check if it's the last message
-//        if (position == mGroupChat.size() - 1) {
-//            // Check if the message is seen and se a text
-//            if (groupChat.isIsseen()) {
-//                holder.txt_seen.setText("Seen");
-//            }
-//            else {
-//                holder.txt_seen.setText("Delivered");
-//            }
-//        }
-//        else {
-//            holder.txt_seen.setVisibility(View.GONE);
-//        }
     }
 
     private void setUserName(GroupChat groupChat, MyViewHolder holder) {
@@ -109,13 +95,11 @@ public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapte
         public ImageView profile_image;
         public TextView name;
         public TextView show_message;
-        public TextView txt_seen;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             show_message = itemView.findViewById(R.id.show_message);
             profile_image = itemView.findViewById(R.id.profile_image);
-            txt_seen = itemView.findViewById(R.id.txt_seen);
             name = itemView.findViewById(R.id.name);
         }
     }
