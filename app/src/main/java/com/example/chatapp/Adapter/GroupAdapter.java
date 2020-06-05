@@ -2,6 +2,7 @@ package com.example.chatapp.Adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,11 +15,19 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.chatapp.GroupMessageActivity;
 import com.example.chatapp.Model.Group;
+import com.example.chatapp.Model.User;
 import com.example.chatapp.R;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
-public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.MyViewHolder>{
+public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.MyViewHolder> {
 
     private Context mContext;
     private List<Group> mGroups;
@@ -40,10 +49,14 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.MyViewHolder
         Group group = mGroups.get(position);
         holder.group_title.setText(group.getGroupTitle());
 
+        holder.group_time.setText("");
+        holder.last_msg.setText("");
+
+        loadLastMessage(group, holder);
+
         if ("default".equals(group.getGroupIcon())) {
             holder.group_icon.setImageResource(R.drawable.ic_group_primary);
-        }
-        else {
+        } else {
             Glide.with(mContext).load(group.getGroupIcon()).into(holder.group_icon);
         }
 
@@ -57,6 +70,48 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.MyViewHolder
         });
     }
 
+    private void loadLastMessage(Group group, MyViewHolder holder) {
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Groups");
+        reference.child(group.getGroupId()).child("Messages").limitToLast(1)
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                            String msg = (String) snapshot.child("message").getValue();
+                            Long timestamp = (Long) snapshot.child("time").getValue();
+                            String sender = (String) snapshot.child("sender").getValue();
+
+                            // Convert timestamp
+                            Calendar calendar = Calendar.getInstance(Locale.ENGLISH);
+                            calendar.setTimeInMillis(timestamp);
+                            String dateTime = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
+
+                            holder.group_time.setText(dateTime);
+
+                            DatabaseReference reference1 = FirebaseDatabase.getInstance().getReference("Users").child(sender);
+                            reference1.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    User user = dataSnapshot.getValue(User.class);
+                                    holder.last_msg.setText(user.getUsername() + ": " +msg);
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+    }
+
     @Override
     public int getItemCount() {
         return mGroups.size();
@@ -67,12 +122,14 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.MyViewHolder
         public TextView group_title;
         public ImageView group_icon;
         private TextView last_msg;
+        private TextView group_time;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             group_title = itemView.findViewById(R.id.group_title);
             group_icon = itemView.findViewById(R.id.group_icon);
             last_msg = itemView.findViewById(R.id.last_msg);
+            group_time = itemView.findViewById(R.id.group_time);
         }
 
     }
