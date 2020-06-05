@@ -35,14 +35,16 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
     private Context mContext;
     private List<User> mUsers;
     private boolean isChat;
+    private boolean isFriend;
     private int position;
 
     String theLastMessage;
 
-    public UserAdapter(Context mContext, List<User> mUsers, boolean isChat) {
+    public UserAdapter(Context mContext, List<User> mUsers, boolean isChat, boolean isFriend) {
         this.mContext = mContext;
         this.mUsers = mUsers;
         this.isChat = isChat;
+        this.isFriend = isFriend;
     }
 
     @NonNull
@@ -68,6 +70,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
         // If the user is in Chat Fragment set his on/off img and call lastMessage method
         if (isChat) {
             lastMessage(user.getId(), holder.last_msg);
+        }
+        if (isChat || isFriend) {
             if (user.getStatus().equals("online")) {
                 holder.img_on.setVisibility(View.VISIBLE);
                 holder.img_off.setVisibility(View.GONE);

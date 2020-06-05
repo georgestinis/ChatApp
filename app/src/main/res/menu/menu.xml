@@ -13,4 +13,10 @@
         app:showAsAction="always"
         android:icon="@drawable/ic_create_group"/>
 
+    <item
+        android:id="@+id/add_participant"
+        android:title="Add Group Participant"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_addperson_white"/>
+
 </menu>

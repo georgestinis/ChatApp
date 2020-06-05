@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -42,6 +44,7 @@ public class GroupMessageActivity extends AppCompatActivity {
     private CircleImageView group_icon;
     private TextView group_title;
     private String groupId;
+    private String myGroupRole = "";
 
     private DatabaseReference reference;
 
@@ -87,6 +90,7 @@ public class GroupMessageActivity extends AppCompatActivity {
         fuser = FirebaseAuth.getInstance().getCurrentUser();
 
         loadGroupInfo();
+        loadMyGroupRole();
 
         // When you click the button to send a message
         btn_send.setOnClickListener(new View.OnClickListener() {
@@ -104,6 +108,23 @@ public class GroupMessageActivity extends AppCompatActivity {
                 text_send.setText("");
             }
         });
+    }
+
+    private void loadMyGroupRole() {
+        reference = FirebaseDatabase.getInstance().getReference("Groups");
+        reference.child(groupId).child("Participants").child(fuser.getUid())
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        myGroupRole = (String) dataSnapshot.child("role").getValue();
+                        invalidateOptionsMenu();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
     }
 
     private void sendMessage(String sender, String msg) {
@@ -192,5 +213,33 @@ public class GroupMessageActivity extends AppCompatActivity {
         super.onPause();
         //reference.removeEventListener(seenListener);
         status("offline");
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        menu.findItem(R.id.logout).setVisible(false);
+        menu.findItem(R.id.create_group).setVisible(false);
+
+        if (myGroupRole.equals("creator") || myGroupRole.equals("admin")) {
+            menu.findItem(R.id.add_participant).setVisible(true);
+        }
+        else {
+            menu.findItem(R.id.add_participant).setVisible(false);
+        }
+
+        return true;
+    }
+
+    // Selecting anything from navigation menu will trigger this method
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.add_participant:
+                Intent intent = new Intent(GroupMessageActivity.this, GroupParticipantsAddActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.putExtra("groupId", groupId);
+                startActivity(intent);
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

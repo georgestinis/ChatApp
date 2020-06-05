@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:text="Group Title"
         android:id="@+id/group_title"
-        android:layout_centerVertical="true"
+        android:layout_marginTop="5dp"
         android:layout_toRightOf="@id/group_icon"
         android:layout_toEndOf="@id/group_icon"
         android:layout_marginLeft="10dp"
@@ -27,11 +27,9 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/group_title"
         android:layout_toRightOf="@id/group_icon"
-        android:layout_marginTop="5dp"
-        android:paddingTop="5dp"
         android:id="@+id/last_msg"
         android:textColor="@color/toolbarDark"
-        android:layout_marginLeft="20dp"
+        android:layout_marginLeft="10dp"
         android:maxLines="1"/>
 
     <TextView
@@ -39,10 +37,6 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/group_title"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="5dp"
-        android:paddingTop="5dp"
-        android:id="@+id/group_time"
-        android:layout_marginLeft="20dp"
-        android:maxLines="1"/>
+        android:id="@+id/group_time"/>
 
 </RelativeLayout>
