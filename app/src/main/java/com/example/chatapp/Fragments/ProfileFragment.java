@@ -67,8 +67,8 @@ public class ProfileFragment extends Fragment {
         image_profile = view.findViewById(R.id.profile_image);
         username = view.findViewById(R.id.username);
 
-        // Get a refernce from firebase storage
-        storageReference = FirebaseStorage.getInstance().getReference("uploads");
+        // Get a reference from firebase storage
+        storageReference = FirebaseStorage.getInstance().getReference("ProfileImages");
 
         fuser = FirebaseAuth.getInstance().getCurrentUser();
         // Get current's user id

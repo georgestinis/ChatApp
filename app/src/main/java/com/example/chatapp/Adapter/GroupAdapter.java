@@ -80,6 +80,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.MyViewHolder
                             String msg = (String) snapshot.child("message").getValue();
                             Long timestamp = (Long) snapshot.child("time").getValue();
                             String sender = (String) snapshot.child("sender").getValue();
+                            String type = (String) snapshot.child("type").getValue();
 
                             // Convert timestamp
                             Calendar calendar = Calendar.getInstance(Locale.ENGLISH);
@@ -93,7 +94,12 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.MyViewHolder
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                     User user = dataSnapshot.getValue(User.class);
-                                    holder.last_msg.setText(user.getUsername() + ": " +msg);
+                                    if (type.equals("image")) {
+                                        holder.last_msg.setText(user.getUsername() + ": sent a photo.");
+                                    }
+                                    else {
+                                        holder.last_msg.setText(user.getUsername() + ": " + msg);
+                                    }
                                 }
 
                                 @Override

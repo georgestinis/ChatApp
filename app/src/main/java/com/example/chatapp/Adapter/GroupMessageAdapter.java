@@ -58,7 +58,22 @@ public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapte
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         GroupChat groupChat = mGroupChat.get(position);
 
-        holder.show_message.setText(groupChat.getMessage());
+        if (groupChat.getType().equals("text")) {
+            holder.image_message.setVisibility(View.GONE);
+            holder.show_message.setVisibility(View.VISIBLE);
+            holder.show_message.setText(groupChat.getMessage());
+        }
+        else if (groupChat.getType().equals("image")){
+            holder.image_message.setVisibility(View.VISIBLE);
+            holder.show_message.setVisibility(View.GONE);
+            if ("default".equals(groupChat.getMessage())) {
+                holder.image_message.setImageResource(R.drawable.ic_image_black);
+            }
+            else {
+                Glide.with(mContext).load(groupChat.getMessage()).into(holder.image_message);
+            }
+        }
+
         setUserName(groupChat ,holder);
     }
 
@@ -95,12 +110,14 @@ public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapte
         public ImageView profile_image;
         public TextView name;
         public TextView show_message;
+        public ImageView image_message;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             show_message = itemView.findViewById(R.id.show_message);
             profile_image = itemView.findViewById(R.id.profile_image);
             name = itemView.findViewById(R.id.name);
+            image_message = itemView.findViewById(R.id.image_message);
         }
     }
 

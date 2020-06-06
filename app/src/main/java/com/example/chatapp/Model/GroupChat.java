@@ -4,11 +4,13 @@ public class GroupChat {
     private String sender;
     private String message;
     private long time;
+    private String type;
 
-    public GroupChat(String sender, String message, long time) {
+    public GroupChat(String sender, String message, long time, String type) {
         this.sender = sender;
         this.message = message;
         this.time = time;
+        this.type = type;
     }
 
     public GroupChat() {
@@ -36,5 +38,13 @@ public class GroupChat {
 
     public void setTime(long time) {
         this.time = time;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

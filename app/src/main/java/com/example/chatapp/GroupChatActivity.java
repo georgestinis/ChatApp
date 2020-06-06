@@ -86,8 +86,8 @@ public class GroupChatActivity extends AppCompatActivity {
         groupTitle = findViewById(R.id.groupTitle);
         groupBtn = findViewById(R.id.createGroupBtn);
 
-        // Get a refernce from firebase storage
-        storageReference = FirebaseStorage.getInstance().getReference("uploads");
+        // Get a reference from firebase storage
+        storageReference = FirebaseStorage.getInstance().getReference("GroupImages");
 
         fuser = FirebaseAuth.getInstance().getCurrentUser();
         if (fuser != null) {
@@ -151,7 +151,6 @@ public class GroupChatActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(@NonNull Task<Uri> task) {
                     if (task.isSuccessful()) {
-                        // TODO ADD TO GROUP CHAT DATABASE
                         Uri downloadUri = task.getResult();
                         mUri = downloadUri.toString();
                         createGroup(groupTitle, mUri);
