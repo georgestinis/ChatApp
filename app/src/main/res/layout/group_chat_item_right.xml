@@ -49,8 +49,7 @@
             android:layout_height="200dp"
             android:scaleType="centerCrop"
             android:layout_below="@+id/show_message"
-            android:src="@drawable/ic_image_black"
-            />
+            android:src="@drawable/ic_image_black"/>
 
     </RelativeLayout>
 
