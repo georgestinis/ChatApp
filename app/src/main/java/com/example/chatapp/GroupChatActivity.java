@@ -242,14 +242,29 @@ public class GroupChatActivity extends AppCompatActivity {
             if (uploadTask != null && uploadTask.isInProgress()) {
                 Toast.makeText(GroupChatActivity.this, "Uploading in progress", Toast.LENGTH_SHORT).show();
             }
-//            // Else call uploadImage
-//            else {
-//                try {
-//                    uploadImage();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
         }
+    }
+
+    private void status(String status) {
+        if (fuser != null) {
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
+
+            HashMap<String, Object> hashMap = new HashMap<>();
+            hashMap.put("status", status);
+
+            reference.updateChildren(hashMap);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        status("online");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        status("offline");
     }
 }

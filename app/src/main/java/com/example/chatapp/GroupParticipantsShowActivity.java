@@ -2,34 +2,34 @@ package com.example.chatapp;
 
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+        import androidx.annotation.NonNull;
+        import androidx.appcompat.app.AppCompatActivity;
+        import androidx.appcompat.widget.Toolbar;
+        import androidx.recyclerview.widget.LinearLayoutManager;
+        import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.chatapp.Adapter.ParticipantAdapter;
-import com.example.chatapp.Model.Friend;
+        import com.example.chatapp.Adapter.ParticipantAdapter;
+import com.example.chatapp.Model.Participant;
 import com.example.chatapp.Model.User;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
+        import com.google.firebase.auth.FirebaseAuth;
+        import com.google.firebase.auth.FirebaseUser;
+        import com.google.firebase.database.DataSnapshot;
+        import com.google.firebase.database.DatabaseError;
+        import com.google.firebase.database.DatabaseReference;
+        import com.google.firebase.database.FirebaseDatabase;
+        import com.google.firebase.database.Query;
+        import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
+        import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
+        import java.util.List;
 
-public class GroupParticipantsAddActivity extends AppCompatActivity {
+public class GroupParticipantsShowActivity extends AppCompatActivity {
 
     private ParticipantAdapter participantAdapter;
     private RecyclerView recyclerView;
-    private List<User> allUsers;
+    private List<User> allParticipants;
     private FirebaseUser fuser;
 
     private String groupId;
@@ -49,7 +49,7 @@ public class GroupParticipantsAddActivity extends AppCompatActivity {
 
         fuser = FirebaseAuth.getInstance().getCurrentUser();
 
-        allUsers = new ArrayList<>();
+        allParticipants = new ArrayList<>();
 
         recyclerView = findViewById(R.id.add_participant_rv);
         recyclerView.setHasFixedSize(true);
@@ -61,32 +61,31 @@ public class GroupParticipantsAddActivity extends AppCompatActivity {
 
     private void getAllUsers() {
         final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Friends").child(firebaseUser.getUid());
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Groups").child(groupId).child("Participants");
         if (firebaseUser != null) {
             reference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
-                    allUsers.clear();
+                    allParticipants.clear();
                     // For every user except me add to list
                     final Iterator<DataSnapshot> iterator = dataSnapshot.getChildren().iterator();
                     while (iterator.hasNext()) {
-                        final Friend friend = iterator.next().getValue(Friend.class);
-                        assert friend != null;
-                        Query query = FirebaseDatabase.getInstance().getReference("Users").orderByChild("id").equalTo(friend.getId());
+                        final Participant participant = iterator.next().getValue(Participant.class);
+                        assert participant != null;
+                        Query query = FirebaseDatabase.getInstance().getReference("Users").orderByChild("id").equalTo(participant.getUid());
                         query.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot1) {
                                 for (DataSnapshot snapshot1 : dataSnapshot1.getChildren()) {
                                     User user = snapshot1.getValue(User.class);
-                                    assert friend != null;
                                     if (!firebaseUser.getUid().equals(user.getId())) {
-                                        if(!allUsers.contains(user)) {
-                                            allUsers.add(user);
+                                        if(!allParticipants.contains(user)) {
+                                            allParticipants.add(user);
                                         }
                                     }
                                 }
                                 if (!iterator.hasNext()) {
-                                    participantAdapter = new ParticipantAdapter(GroupParticipantsAddActivity.this, allUsers, groupId, myGroupRole);
+                                    participantAdapter = new ParticipantAdapter(GroupParticipantsShowActivity.this, allParticipants, groupId, myGroupRole);
                                     recyclerView.setAdapter(participantAdapter);
                                 }
                             }
@@ -127,7 +126,7 @@ public class GroupParticipantsAddActivity extends AppCompatActivity {
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists()) {
                                         myGroupRole = (String) dataSnapshot.child("role").getValue();
-                                        getSupportActionBar().setTitle(groupTitle + "(" + myGroupRole + ") - Add Participant");
+                                        getSupportActionBar().setTitle(groupTitle + "(" + myGroupRole + ") - Participants");
                                         getAllUsers();
                                     }
                                 }
@@ -152,6 +151,7 @@ public class GroupParticipantsAddActivity extends AppCompatActivity {
         onBackPressed();
         return super.onSupportNavigateUp();
     }
+
 
     private void status(String status) {
         if (fuser != null) {

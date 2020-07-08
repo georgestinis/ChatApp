@@ -24,17 +24,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class AddParticipantAdapter extends RecyclerView.Adapter<AddParticipantAdapter.MyViewHolder> {
+public class ParticipantAdapter extends RecyclerView.Adapter<ParticipantAdapter.MyViewHolder> {
 
     private Context mContext;
     private List<User> mUsers;
     private String groupId, myGroupRole;
 
-    public AddParticipantAdapter(Context mContext, List<User> mUsers, String groupId, String myGroupRole) {
+    public ParticipantAdapter(Context mContext, List<User> mUsers, String groupId, String myGroupRole) {
         this.mContext = mContext;
         this.mUsers = mUsers;
         this.groupId = groupId;
@@ -45,7 +44,7 @@ public class AddParticipantAdapter extends RecyclerView.Adapter<AddParticipantAd
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(mContext).inflate(R.layout.participants_add, parent, false);
-        return new AddParticipantAdapter.MyViewHolder(view);
+        return new ParticipantAdapter.MyViewHolder(view);
     }
 
     @Override

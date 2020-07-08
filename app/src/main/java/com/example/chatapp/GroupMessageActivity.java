@@ -408,7 +408,7 @@ public class GroupMessageActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu, menu);
         menu.findItem(R.id.logout).setVisible(false);
         menu.findItem(R.id.create_group).setVisible(false);
-
+        menu.findItem(R.id.show_participants).setVisible(true);
         if (myGroupRole.equals("creator") || myGroupRole.equals("admin")) {
             menu.findItem(R.id.add_participant).setVisible(true);
         }
@@ -422,11 +422,18 @@ public class GroupMessageActivity extends AppCompatActivity {
     // Selecting anything from navigation menu will trigger this method
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        Intent intent;
         switch (item.getItemId()) {
             case R.id.add_participant:
-                Intent intent = new Intent(GroupMessageActivity.this, GroupParticipantsAddActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent = new Intent(GroupMessageActivity.this, GroupParticipantsAddActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 intent.putExtra("groupId", groupId);
                 startActivity(intent);
+                break;
+            case R.id.show_participants:
+                intent = new Intent(GroupMessageActivity.this, GroupParticipantsShowActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.putExtra("groupId", groupId);
+                startActivity(intent);
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
