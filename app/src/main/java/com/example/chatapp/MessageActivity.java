@@ -176,6 +176,7 @@ public class MessageActivity extends AppCompatActivity {
         btn_attach.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                notify = true;
                 // Pick image from gallery/camera
                 showImageImportDialog();
             }
