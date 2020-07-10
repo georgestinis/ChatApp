@@ -64,6 +64,22 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
             Glide.with(mContext).load(imageurl).into(holder.profile_image);
         }
 
+        if (chat.getType().equals("text")) {
+            holder.image_message.setVisibility(View.GONE);
+            holder.show_message.setVisibility(View.VISIBLE);
+            holder.show_message.setText(chat.getMessage());
+        }
+        else if (chat.getType().equals("image")){
+            holder.image_message.setVisibility(View.VISIBLE);
+            holder.show_message.setVisibility(View.GONE);
+            if ("default".equals(chat.getMessage())) {
+                holder.image_message.setImageResource(R.drawable.ic_image_black);
+            }
+            else {
+                Glide.with(mContext).load(chat.getMessage()).into(holder.image_message);
+            }
+        }
+
         // Check if it's the last message
         if (position == mChat.size() - 1) {
             // Check if the message is seen and se a text
@@ -89,12 +105,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
         public TextView show_message;
         public ImageView profile_image;
         public TextView txt_seen;
+        public ImageView image_message;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             show_message = itemView.findViewById(R.id.show_message);
             profile_image = itemView.findViewById(R.id.profile_image);
             txt_seen = itemView.findViewById(R.id.txt_seen);
+            image_message = itemView.findViewById(R.id.image_message);
         }
     }
 

@@ -7,16 +7,37 @@ public class Chat {
     private String message;
     private boolean isseen;
     private String deletedfrom;
+    private String type;
+    private long time;
 
-    public Chat(String sender, String receiver, String message, boolean isseen, String deletedfrom) {
+
+    public Chat(String sender, String receiver, String message, boolean isseen, String deletedfrom, String type, long time) {
         this.sender = sender;
         this.receiver = receiver;
         this.message = message;
         this.isseen = isseen;
         this.deletedfrom = deletedfrom;
+        this.type = type;
+        this.time = time;
     }
 
     public Chat() {
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 
     public String getSender() {

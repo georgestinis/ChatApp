@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:padding="8dp"
     android:layout_alignParentEnd="true"
-    android:layout_alignParentRight="true"
+    android:layout_gravity="end"
     android:layout_height="wrap_content">
 
     <de.hdodenhof.circleimageview.CircleImageView
@@ -12,22 +12,39 @@
         android:id="@+id/profile_image"
         android:visibility="gone"/>
 
-    <TextView
-        android:id="@+id/show_message"
-        android:textSize="18sp"
+    <RelativeLayout
+        android:id="@+id/rl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/name"
         android:layout_alignParentEnd="true"
-        android:background="@drawable/background_right"
-        android:text="hello"
-        android:textColor="@color/white"
-        android:padding="8dp"/>
+        android:layout_alignParentRight="true"
+        android:padding="8dp"
+        android:background="@drawable/background_right">
+
+        <TextView
+            android:id="@+id/show_message"
+            android:textSize="18sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="hello"
+            android:textColor="@color/white"/>
+
+        <ImageView
+            android:id="@+id/image_message"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:layout_below="@+id/show_message"
+            android:src="@drawable/ic_image_black"/>
+
+    </RelativeLayout>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/txt_seen"
-        android:layout_below="@id/show_message"
+        android:layout_below="@id/rl"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"/>
 
