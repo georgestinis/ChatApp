@@ -108,7 +108,7 @@ public class FriendsFragment extends Fragment {
                         }
                     }
 
-                    userAdapter = new UserAdapter(getContext(), allUsers, false, false);
+                    userAdapter = new UserAdapter(getContext(), allUsers, false);
                     recyclerView.setAdapter(userAdapter);
                 }
 
@@ -148,7 +148,7 @@ public class FriendsFragment extends Fragment {
                                     }
                                 }
                                 if (!iterator.hasNext()) {
-                                    userAdapter = new UserAdapter(getContext(), allUsers, false, true);
+                                    userAdapter = new UserAdapter(getContext(), allUsers,true);
                                     recyclerView.setAdapter(userAdapter);
                                 }
                             }

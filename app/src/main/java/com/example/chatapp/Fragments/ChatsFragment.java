@@ -1,6 +1,5 @@
 package com.example.chatapp.Fragments;
 
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -10,20 +9,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
+import com.example.chatapp.Adapter.ChatAdapter;
 import com.example.chatapp.Adapter.UserAdapter;
-import com.example.chatapp.MainActivity;
 import com.example.chatapp.Model.Chat;
 import com.example.chatapp.Model.Chatlist;
 import com.example.chatapp.Model.User;
 import com.example.chatapp.Notifications.Token;
 import com.example.chatapp.R;
-import com.example.chatapp.StartActivity;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -47,7 +43,7 @@ import static androidx.constraintlayout.widget.Constraints.TAG;
 public class ChatsFragment extends Fragment {
 
     private RecyclerView recyclerView;
-    private UserAdapter userAdapter;
+    private ChatAdapter chatAdapter;
     private List<User> mUsers;
 
     FirebaseUser fuser;
@@ -128,8 +124,8 @@ public class ChatsFragment extends Fragment {
                     }
                 }
                 // Show them with the recycler view
-                userAdapter = new UserAdapter(getContext(), mUsers, true, false);
-                recyclerView.setAdapter(userAdapter);
+                chatAdapter = new ChatAdapter(getContext(), mUsers);
+                recyclerView.setAdapter(chatAdapter);
             }
 
             @Override

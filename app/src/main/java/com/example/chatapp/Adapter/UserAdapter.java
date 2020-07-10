@@ -37,16 +37,14 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
 
     private Context mContext;
     private List<User> mUsers;
-    private boolean isChat;
     private boolean isFriend;
     private int position;
 
     String theLastMessage;
 
-    public UserAdapter(Context mContext, List<User> mUsers, boolean isChat, boolean isFriend) {
+    public UserAdapter(Context mContext, List<User> mUsers, boolean isFriend) {
         this.mContext = mContext;
         this.mUsers = mUsers;
-        this.isChat = isChat;
         this.isFriend = isFriend;
     }
 
@@ -70,11 +68,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
         else {
             Glide.with(mContext).load(user.getImageURL()).into(holder.profile_image);
         }
-        // If the user is in Chat Fragment set his on/off img and call lastMessage method
-        if (isChat) {
-            lastMessage(user.getId(), holder);
-        }
-        if (isChat || isFriend) {
+        if (isFriend) {
             if (user.getStatus().equals("online")) {
                 holder.img_on.setVisibility(View.VISIBLE);
                 holder.img_off.setVisibility(View.GONE);
@@ -85,7 +79,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
             }
         }
         else {
-            holder.last_msg.setVisibility(View.GONE);
             holder.img_on.setVisibility(View.GONE);
             holder.img_off.setVisibility(View.GONE);
         }
@@ -126,8 +119,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
         public ImageView profile_image;
         private ImageView img_on;
         private ImageView img_off;
-        private TextView last_msg;
-        private TextView time;
         private RelativeLayout long_click_menu;
 
         public MyViewHolder(@NonNull View itemView) {
@@ -136,8 +127,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
             profile_image = itemView.findViewById(R.id.profile_image);
             img_on = itemView.findViewById(R.id.img_on);
             img_off = itemView.findViewById(R.id.img_off);
-            last_msg = itemView.findViewById(R.id.last_msg);
-            time = itemView.findViewById(R.id.time);
             long_click_menu = itemView.findViewById(R.id.long_click_menu);
             long_click_menu.setOnCreateContextMenuListener(this);
         }
@@ -150,75 +139,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
             menu.add(Menu.NONE, R.id.deleting, 0 , "Delete this conversation");
             menu.add(Menu.NONE, R.id.del_friend, 0 , "Delete User");
 
-        }
-    }
-
-    // Check for last message
-    private void lastMessage(final String userid, final MyViewHolder holder) {
-        theLastMessage = "";
-        // Get the current user and if he/she is not null get Chats reference
-        final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (firebaseUser != null) {
-            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Chats");
-            reference.addValueEventListener(new ValueEventListener() {
-                // If something change in chats reference
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    boolean seen_msg = true;
-                    // For every chat get the message until it's the last
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        Chat chat = snapshot.getValue(Chat.class);
-                        assert chat != null;
-                        if (chat.getReceiver() != null && chat.getSender() != null) {
-                            if (chat.getReceiver().equals(firebaseUser.getUid()) && chat.getSender().equals(userid))
-                            {
-                                if (chat.getType().equals("image")) {
-                                    theLastMessage = "Sent a photo.";
-                                }
-                                else {
-                                    theLastMessage = chat.getMessage();
-                                }
-                                seen_msg = chat.isIsseen();
-                            }
-                            else if (chat.getReceiver().equals(userid) && chat.getSender().equals(firebaseUser.getUid())) {
-                                if (chat.getType().equals("image")) {
-                                    theLastMessage = "You sent a photo.";
-                                }
-                                else {
-                                    theLastMessage = "You: " + chat.getMessage();
-                                }
-                            }
-                            // Convert timestamp
-                            Calendar calendar = Calendar.getInstance(Locale.ENGLISH);
-                            calendar.setTimeInMillis(chat.getTime());
-                            System.out.println(chat.getTime());
-                            String dateTime = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
-
-                            holder.time.setText(dateTime);
-                        }
-                    }
-
-                    // Show the message in a text view and if it's not seen make it bold
-                    switch (theLastMessage) {
-                        case "":
-                            holder.last_msg.setText("No Message");
-                            break;
-                        default:
-                            holder.last_msg.setText(theLastMessage);
-                            if (!seen_msg) {
-                                holder.last_msg.setTypeface(null, Typeface.BOLD);
-                            }
-                            break;
-                    }
-
-                    theLastMessage = "";
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
         }
     }
 
