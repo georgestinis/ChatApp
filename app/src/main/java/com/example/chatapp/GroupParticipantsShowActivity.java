@@ -43,7 +43,6 @@ public class GroupParticipantsShowActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
 
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Add Participants");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
@@ -60,9 +59,8 @@ public class GroupParticipantsShowActivity extends AppCompatActivity {
     }
 
     private void getAllUsers() {
-        final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Groups").child(groupId).child("Participants");
-        if (firebaseUser != null) {
+        if (fuser != null) {
             reference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
@@ -78,7 +76,7 @@ public class GroupParticipantsShowActivity extends AppCompatActivity {
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot1) {
                                 for (DataSnapshot snapshot1 : dataSnapshot1.getChildren()) {
                                     User user = snapshot1.getValue(User.class);
-                                    if (!firebaseUser.getUid().equals(user.getId())) {
+                                    if (!fuser.getUid().equals(user.getId())) {
                                         if(!allParticipants.contains(user)) {
                                             allParticipants.add(user);
                                         }

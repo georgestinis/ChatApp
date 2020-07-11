@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu, menu);
         menu.findItem(R.id.add_participant).setVisible(false);
         menu.findItem(R.id.show_participants).setVisible(false);
+        menu.findItem(R.id.groupinfo).setVisible(false);
         return true;
     }
 

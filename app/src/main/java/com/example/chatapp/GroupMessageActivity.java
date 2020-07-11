@@ -434,6 +434,11 @@ public class GroupMessageActivity extends AppCompatActivity {
                 intent.putExtra("groupId", groupId);
                 startActivity(intent);
                 break;
+            case R.id.groupinfo:
+                intent = new Intent(GroupMessageActivity.this, GroupInfoActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.putExtra("groupId", groupId);
+                startActivity(intent);
+                break;
         }
         return super.onOptionsItemSelected(item);
     }

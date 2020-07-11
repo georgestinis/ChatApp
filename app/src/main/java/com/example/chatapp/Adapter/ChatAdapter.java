@@ -178,7 +178,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder>{
                             // Convert timestamp
                             Calendar calendar = Calendar.getInstance(Locale.ENGLISH);
                             calendar.setTimeInMillis(chat.getTime());
-                            System.out.println(chat.getTime());
                             String dateTime = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
 
                             holder.time.setText(dateTime);
