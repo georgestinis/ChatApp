@@ -50,7 +50,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class GroupChatActivity extends AppCompatActivity {
 
-    FirebaseUser fuser;
+    private FirebaseUser fuser;
 
     private static final int IMAGE_REQUEST = 1;
     private Uri imageUri;

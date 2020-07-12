@@ -1,22 +1,27 @@
 package com.example.chatapp;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.chatapp.Adapter.ParticipantAdapter;
 import com.example.chatapp.Model.Participant;
 import com.example.chatapp.Model.User;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -87,6 +92,97 @@ public class GroupInfoActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        leave_group.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // If user is participant/admin: leave group
+                // If user is creator: delete group
+                String dialogTitle;
+                String dialogDescription;
+                String positiveButtonTitle;
+                if (myGroupRole.equals("creator")) {
+                    dialogTitle = "Delete Group";
+                    dialogDescription = "Are you sure you want to Delete group permantly?";
+                    positiveButtonTitle = "DELETE";
+                }
+                else {
+                    dialogTitle = "Leave Group";
+                    dialogDescription = "Are you sure you want to Leave group?";
+                    positiveButtonTitle = "LEAVE";
+                }
+                AlertDialog.Builder builder = new AlertDialog.Builder(GroupInfoActivity.this);
+                builder.setTitle(dialogTitle).setMessage(dialogDescription).setPositiveButton(positiveButtonTitle, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (myGroupRole.equals("creator")) {
+                            // Delete group
+                            deleteGroup();
+                        }
+                        else {
+                            // Leave group
+                            leaveGroup();
+                        }
+                    }
+                }).setNeutralButton("CANCEL", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        
+                    }
+                }).show();
+            }
+        });
+
+        edit_group.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(GroupInfoActivity.this, GroupEditActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.putExtra("groupId", groupId);
+                startActivity(intent);
+            }
+        });
+    }
+
+    private void leaveGroup() {
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Groups");
+        reference.child(groupId).child("Participants").child(fuser.getUid()).removeValue()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        // Successfully left from the group
+                        Toast.makeText(GroupInfoActivity.this, "You have successfully left the group", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(GroupInfoActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                        finish();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // Failed to leave the group
+                        Toast.makeText(GroupInfoActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void deleteGroup() {
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Groups");
+        reference.child(groupId).removeValue()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        // Group deleted successfully
+                        Toast.makeText(GroupInfoActivity.this, "You have successfully deleted the group", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(GroupInfoActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                        finish();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // Failed to delete the group
+                        Toast.makeText(GroupInfoActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void loadGroupInfo() {
