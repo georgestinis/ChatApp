@@ -1,5 +1,7 @@
 package com.example.chatapp;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -8,20 +10,48 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.TextUtils;
+import android.text.format.DateFormat;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.example.chatapp.Model.Group;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.StorageTask;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Locale;
 
 public class GroupEditActivity extends AppCompatActivity {
     private FirebaseUser fuser;
@@ -78,6 +108,12 @@ public class GroupEditActivity extends AppCompatActivity {
 
         fuser = FirebaseAuth.getInstance().getCurrentUser();
 
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Please wait...");
+        progressDialog.setCanceledOnTouchOutside(false);
+
+        loadGroupInfo();
+
         // Pick image
         groupIcon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,7 +126,135 @@ public class GroupEditActivity extends AppCompatActivity {
         groupBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startUpdatingGroup();
+                try {
+                    startUpdatingGroup();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void startUpdatingGroup() throws IOException {
+        String groupTitleS = groupTitle.getText().toString().trim();
+
+
+        if (TextUtils.isEmpty(groupTitleS)) {
+            Toast.makeText(this, "Group title is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        progressDialog.setMessage("Updating Group Info...");
+        progressDialog.show();
+
+        if (imageUri == null) {
+            // Update group without icon
+            HashMap<String, Object> hashMap = new HashMap<>();
+            hashMap.put("groupTitle", groupTitleS);
+
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Groups");
+            reference.child(groupId).updateChildren(hashMap)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            progressDialog.dismiss();
+                            Toast.makeText(GroupEditActivity.this, "Group info updated...", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            progressDialog.dismiss();
+                            Toast.makeText(GroupEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
+        else {
+            // Update group with icon
+            final StorageReference storageReference = FirebaseStorage.getInstance().getReference("GroupImages").child(System.currentTimeMillis()+ "." + getFileExtension(imageUri));
+            // Compress the image
+            Bitmap bmp = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bmp.compress(Bitmap.CompressFormat.JPEG, 15, baos);
+            byte[] data = baos.toByteArray();
+
+            StorageTask uploadTask;
+
+            uploadTask = storageReference.putBytes(data);
+
+            uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                @Override
+                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+                    // Return the image url
+                    return storageReference.getDownloadUrl();
+                }
+            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                @Override
+                public void onComplete(@NonNull Task<Uri> task) {
+                    if (task.isSuccessful()) {
+                        Uri downloadUri = task.getResult();
+                        String mUri = downloadUri.toString();
+
+                        HashMap<String, Object> hashMap = new HashMap<>();
+                        hashMap.put("groupTitle", groupTitleS);
+                        hashMap.put("groupIcon", mUri);
+
+                        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Groups");
+                        reference.child(groupId).updateChildren(hashMap)
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        progressDialog.dismiss();
+                                        Toast.makeText(GroupEditActivity.this, "Group info updated...", Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        progressDialog.dismiss();
+                                        Toast.makeText(GroupEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(GroupEditActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    progressDialog.dismiss();
+                }
+            });
+        }
+    }
+
+    // Get file extension
+    private String getFileExtension(Uri uri) {
+        ContentResolver contentResolver = getContentResolver();
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+        return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
+    }
+
+    private void loadGroupInfo() {
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Groups");
+
+        reference.child(groupId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Group group = dataSnapshot.getValue(Group.class);
+                groupTitle.setText(group.getGroupTitle());
+                if ("default".equals(group.getGroupIcon())) {
+                    groupIcon.setImageResource(R.drawable.ic_group_primary);
+                }
+                else {
+                    Glide.with(getApplicationContext()).load(group.getGroupIcon()).into(groupIcon);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
             }
         });
     }
@@ -156,6 +320,54 @@ public class GroupEditActivity extends AppCompatActivity {
         boolean result1 = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == (PackageManager.PERMISSION_GRANTED);
 
         return result && result1;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (resultCode == RESULT_OK) {
+            if (requestCode == IMAGE_PICK_GALLERY_CODE) {
+                // Picked from gallery
+                imageUri = data.getData();
+                groupIcon.setImageURI(imageUri);
+            }
+            else if (requestCode == IMAGE_PICK_CAMERA_CODE) {
+                // Picked from camera
+                groupIcon.setImageURI(imageUri);
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case CAMERA_REQUEST_CODE:
+                if (grantResults.length > 0) {
+                    System.out.println(grantResults.length);
+                    boolean cameraAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    boolean writeStorageAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+
+                    if (cameraAccepted && writeStorageAccepted) {
+                        pickFromCamera();
+                    }
+                    else {
+                        Toast.makeText(this, "Camera & Storage permissions are required...", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                break;
+            case STORAGE_REQUEST_CODE:
+                if (grantResults.length > 0) {
+                    boolean writeStorageAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    if (writeStorageAccepted) {
+                        pickFromGallery();
+                    }
+                    else {
+                        Toast.makeText(this, "Storage permission is required", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                break;
+        }
     }
 
     @Override
