@@ -4,11 +4,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -52,14 +59,25 @@ public class GroupChatActivity extends AppCompatActivity {
 
     private FirebaseUser fuser;
 
-    private static final int IMAGE_REQUEST = 1;
-    private Uri imageUri;
+    // Permissions request constants
+    private static final int CAMERA_REQUEST_CODE = 100;
+    private static final int STORAGE_REQUEST_CODE = 200;
+
+    // Image pick constants
+    private static final int IMAGE_PICK_GALLERY_CODE = 300;
+    private static final int IMAGE_PICK_CAMERA_CODE = 400;
+
+    // Permissions to be requested
+    private String[] cameraPermission;
+    private String[] storagePermission;
+
+    // Uri of picked image
+    private Uri imageUri = null;
+
     private StorageTask uploadTask;
     private StorageReference storageReference;
 
     private ProgressDialog progressDialog;
-
-    private String mUri;
 
     private ImageView groupIcon;
     private EditText groupTitle;
@@ -86,15 +104,12 @@ public class GroupChatActivity extends AppCompatActivity {
         groupTitle = findViewById(R.id.groupTitle);
         groupBtn = findViewById(R.id.createGroupBtn);
 
-        // Get a reference from firebase storage
-        storageReference = FirebaseStorage.getInstance().getReference("GroupImages");
-
         fuser = FirebaseAuth.getInstance().getCurrentUser();
         if (fuser != null) {
             getSupportActionBar().setSubtitle(fuser.getDisplayName());
         }
 
-        groupIcon.setOnClickListener(v -> openImage());
+        groupIcon.setOnClickListener(v -> showImagePickDialog());
 
         groupBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -125,9 +140,7 @@ public class GroupChatActivity extends AppCompatActivity {
         if (imageUri == null) {
             createGroup(groupTitle, "default");
         } else {
-            final StorageReference fileReference = storageReference.child(System.currentTimeMillis()
-                    + "." + getFileExtension(imageUri));
-
+            storageReference = FirebaseStorage.getInstance().getReference("GroupImages").child(System.currentTimeMillis()+ "." + getFileExtension(imageUri));
             // Compress the image
             Bitmap bmp = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -135,9 +148,8 @@ public class GroupChatActivity extends AppCompatActivity {
             byte[] data = baos.toByteArray();
 
             // Upload the image to data base
-            uploadTask = fileReference.putBytes(data);
+            uploadTask = storageReference.putBytes(data);
 
-            //uploadTask = fileReference.putFile(imageUri);
             uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                 @Override
                 public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
@@ -145,14 +157,14 @@ public class GroupChatActivity extends AppCompatActivity {
                         throw task.getException();
                     }
                     // Return the image url
-                    return fileReference.getDownloadUrl();
+                    return storageReference.getDownloadUrl();
                 }
             }).addOnCompleteListener(new OnCompleteListener<Uri>() {
                 @Override
                 public void onComplete(@NonNull Task<Uri> task) {
                     if (task.isSuccessful()) {
                         Uri downloadUri = task.getResult();
-                        mUri = downloadUri.toString();
+                        String mUri = downloadUri.toString();
                         createGroup(groupTitle, mUri);
                     }
                 }
@@ -191,7 +203,7 @@ public class GroupChatActivity extends AppCompatActivity {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 progressDialog.dismiss();
-                                Toast.makeText(GroupChatActivity.this, "Groupd created successfully", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(GroupChatActivity.this, "Group created successfully", Toast.LENGTH_SHORT).show();
                                 startActivity(new Intent(GroupChatActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
                             }
                         })
@@ -212,14 +224,6 @@ public class GroupChatActivity extends AppCompatActivity {
         });
     }
 
-    private void openImage() {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        // Allow the user to select a particular kind of data and return it
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(intent, IMAGE_REQUEST);
-    }
-
     // Get file extension
     private String getFileExtension(Uri uri) {
         ContentResolver contentResolver = getContentResolver();
@@ -227,21 +231,119 @@ public class GroupChatActivity extends AppCompatActivity {
         return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
     }
 
+    private void showImagePickDialog() {
+        String[] options = {"Camera", "Gallery"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Pick Image:").setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == 0) {
+                    if (!checkCameraPermission()){
+                        requestCameraPermission();
+                    }
+                    else {
+                        pickFromCamera();
+                    }
+                }
+                else {
+                    if (!checkStoragePermission()) {
+                        requestStoragePermission();
+                    }
+                    else {
+                        pickFromGallery();
+                    }
+                }
+            }
+        }).show();
+    }
+
+    private void pickFromGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, IMAGE_PICK_GALLERY_CODE);
+    }
+
+    private void pickFromCamera() {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.Images.Media.TITLE, "GroupImage");
+        contentValues.put(MediaStore.Images.Media.DESCRIPTION, "GroupImageDescription");
+
+        imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        startActivityForResult(intent, IMAGE_PICK_CAMERA_CODE);
+    }
+
+    private void requestStoragePermission() {
+        ActivityCompat.requestPermissions(this, storagePermission, STORAGE_REQUEST_CODE);
+    }
+
+    private boolean checkStoragePermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == (PackageManager.PERMISSION_GRANTED);
+    }
+
+    private void requestCameraPermission() {
+        ActivityCompat.requestPermissions(this, cameraPermission, CAMERA_REQUEST_CODE);
+    }
+
+    private boolean checkCameraPermission() {
+        boolean result =  ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == (PackageManager.PERMISSION_GRANTED);
+        boolean result1 = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == (PackageManager.PERMISSION_GRANTED);
+
+        return result && result1;
+    }
+
     // Receive the result from a previous call to startActivityForResult
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        // if requestCode is 1 and result code is -1 and there is some data (image selected)
-        if (requestCode == IMAGE_REQUEST && resultCode == RESULT_OK
-                && data != null && data.getData() != null) {
-            // Set imageUri with the given URI data
-            imageUri = data.getData();
-            groupIcon.setImageURI(imageUri);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == IMAGE_PICK_GALLERY_CODE && data != null && data.getData() != null) {
+                // Picked from gallery
+                imageUri = data.getData();
+                groupIcon.setImageURI(imageUri);
+            }
+            else if (requestCode == IMAGE_PICK_CAMERA_CODE) {
+                // Picked from camera
+                groupIcon.setImageURI(imageUri);
+            }
             // If you already uploading show a toast message
             if (uploadTask != null && uploadTask.isInProgress()) {
                 Toast.makeText(GroupChatActivity.this, "Uploading in progress", Toast.LENGTH_SHORT).show();
             }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case CAMERA_REQUEST_CODE:
+                if (grantResults.length > 0) {
+                    System.out.println(grantResults.length);
+                    boolean cameraAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    boolean writeStorageAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+
+                    if (cameraAccepted && writeStorageAccepted) {
+                        pickFromCamera();
+                    }
+                    else {
+                        Toast.makeText(this, "Camera & Storage permissions are required...", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                break;
+            case STORAGE_REQUEST_CODE:
+                if (grantResults.length > 0) {
+                    boolean writeStorageAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    if (writeStorageAccepted) {
+                        pickFromGallery();
+                    }
+                    else {
+                        Toast.makeText(this, "Storage permission is required", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                break;
         }
     }
 

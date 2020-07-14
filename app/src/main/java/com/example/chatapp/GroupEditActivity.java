@@ -54,8 +54,6 @@ import java.util.HashMap;
 import java.util.Locale;
 
 public class GroupEditActivity extends AppCompatActivity {
-    private FirebaseUser fuser;
-
     // Permissions request constants
     private static final int CAMERA_REQUEST_CODE = 100;
     private static final int STORAGE_REQUEST_CODE = 200;
@@ -70,6 +68,9 @@ public class GroupEditActivity extends AppCompatActivity {
 
     // Uri of picked image
     private Uri imageUri = null;
+
+    private StorageReference storageReference;
+    private StorageTask uploadTask;
 
     private ImageView groupIcon;
     private EditText groupTitle;
@@ -105,8 +106,6 @@ public class GroupEditActivity extends AppCompatActivity {
         storagePermission = new String[]{
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
         };
-
-        fuser = FirebaseAuth.getInstance().getCurrentUser();
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Please wait...");
@@ -171,14 +170,12 @@ public class GroupEditActivity extends AppCompatActivity {
         }
         else {
             // Update group with icon
-            final StorageReference storageReference = FirebaseStorage.getInstance().getReference("GroupImages").child(System.currentTimeMillis()+ "." + getFileExtension(imageUri));
+            storageReference = FirebaseStorage.getInstance().getReference("GroupImages").child(System.currentTimeMillis()+ "." + getFileExtension(imageUri));
             // Compress the image
             Bitmap bmp = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             bmp.compress(Bitmap.CompressFormat.JPEG, 15, baos);
             byte[] data = baos.toByteArray();
-
-            StorageTask uploadTask;
 
             uploadTask = storageReference.putBytes(data);
 
@@ -325,7 +322,7 @@ public class GroupEditActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == RESULT_OK) {
-            if (requestCode == IMAGE_PICK_GALLERY_CODE) {
+            if (requestCode == IMAGE_PICK_GALLERY_CODE && data != null && data.getData() != null) {
                 // Picked from gallery
                 imageUri = data.getData();
                 groupIcon.setImageURI(imageUri);
@@ -333,6 +330,10 @@ public class GroupEditActivity extends AppCompatActivity {
             else if (requestCode == IMAGE_PICK_CAMERA_CODE) {
                 // Picked from camera
                 groupIcon.setImageURI(imageUri);
+            }
+            // If you already uploading show a toast message
+            if (uploadTask != null && uploadTask.isInProgress()) {
+                Toast.makeText(GroupEditActivity.this, "Uploading in progress", Toast.LENGTH_SHORT).show();
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
