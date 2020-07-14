@@ -78,12 +78,12 @@ public class GroupMessageActivity extends AppCompatActivity {
     private FirebaseUser fuser;
 
     // Permissions request constants
-    private static final int CAMERA_REQUEST_CODE = 200;
-    private static final int STORAGE_REQUEST_CODE = 400;
+    private static final int CAMERA_REQUEST_CODE = 100;
+    private static final int STORAGE_REQUEST_CODE = 200;
 
     // Image pick constants
-    private static final int IMAGE_PICK_GALLERY_CODE = 1000;
-    private static final int IMAGE_PICK_CAMERA_CODE = 2000;
+    private static final int IMAGE_PICK_GALLERY_CODE = 300;
+    private static final int IMAGE_PICK_CAMERA_CODE = 400;
 
     // Permissions to be requested
     private String[] cameraPermission;
@@ -91,6 +91,11 @@ public class GroupMessageActivity extends AppCompatActivity {
 
     // Uri of picked image
     private Uri imageUri = null;
+
+    private StorageReference storageReference;
+    private StorageTask uploadTask;
+
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -265,18 +270,17 @@ public class GroupMessageActivity extends AppCompatActivity {
     }
 
     private void sendImageMessage() throws IOException {
-        ProgressDialog pd = new ProgressDialog(this);
-        pd.setTitle("Please wait");
-        pd.setMessage("Sending Image...");
-        pd.setCanceledOnTouchOutside(false);
-        pd.show();
-        final StorageReference storageReference = FirebaseStorage.getInstance().getReference("ChatImages").child(System.currentTimeMillis()+ "." + getFileExtension(imageUri));
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Please wait");
+        progressDialog.setMessage("Sending Image...");
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.show();
+        storageReference = FirebaseStorage.getInstance().getReference("ChatImages").child(System.currentTimeMillis()+ "." + getFileExtension(imageUri));
         // Compress the image
         Bitmap bmp = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.JPEG, 15, baos);
         byte[] data = baos.toByteArray();
-        StorageTask uploadTask;
 
         uploadTask = storageReference.putBytes(data);
 
@@ -309,11 +313,11 @@ public class GroupMessageActivity extends AppCompatActivity {
 
                     reference.child(groupId).child("Messages").child(time+"").setValue(hashMap)
                             .addOnSuccessListener(e -> {
-                                pd.dismiss();
+                                progressDialog.dismiss();
                             })
                             .addOnFailureListener(e -> {
                                 Toast.makeText(GroupMessageActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                                pd.dismiss();
+                                progressDialog.dismiss();
                             });
                 }
             }
@@ -321,7 +325,7 @@ public class GroupMessageActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(GroupMessageActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                pd.dismiss();
+                progressDialog.dismiss();
             }
         });
     }
@@ -445,9 +449,8 @@ public class GroupMessageActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            if (requestCode == IMAGE_PICK_GALLERY_CODE) {
+            if (requestCode == IMAGE_PICK_GALLERY_CODE && data != null && data.getData() != null) {
                 // Picked from gallery
                 imageUri = data.getData();
                 try {
@@ -465,6 +468,7 @@ public class GroupMessageActivity extends AppCompatActivity {
                 }
             }
         }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

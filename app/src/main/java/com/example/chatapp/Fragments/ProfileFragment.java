@@ -1,15 +1,21 @@
 package com.example.chatapp.Fragments;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import android.provider.MediaStore;
@@ -48,16 +54,31 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ProfileFragment extends Fragment {
 
-    CircleImageView image_profile;
-    TextView username;
+    private CircleImageView image_profile;
+    private TextView username;
 
-    DatabaseReference reference;
-    FirebaseUser fuser;
+    private DatabaseReference reference;
+    private FirebaseUser fuser;
 
-    StorageReference storageReference;
-    private static final int IMAGE_REQUEST = 1;
-    private Uri imageUri;
+    // Permissions request constants
+    private static final int CAMERA_REQUEST_CODE = 100;
+    private static final int STORAGE_REQUEST_CODE = 200;
+
+    // Image pick constants
+    private static final int IMAGE_PICK_GALLERY_CODE = 300;
+    private static final int IMAGE_PICK_CAMERA_CODE = 400;
+
+    // Permissions to be requested
+    private String[] cameraPermission;
+    private String[] storagePermission;
+
+    // Uri of picked image
+    private Uri imageUri = null;
+
+    private StorageReference storageReference;
     private StorageTask uploadTask;
+
+    private ProgressDialog progressDialog;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -67,8 +88,14 @@ public class ProfileFragment extends Fragment {
         image_profile = view.findViewById(R.id.profile_image);
         username = view.findViewById(R.id.username);
 
-        // Get a reference from firebase storage
-        storageReference = FirebaseStorage.getInstance().getReference("ProfileImages");
+        cameraPermission = new String[]{
+                Manifest.permission.CAMERA,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+        };
+
+        storagePermission = new String[]{
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+        };
 
         fuser = FirebaseAuth.getInstance().getCurrentUser();
         // Get current's user id
@@ -97,18 +124,76 @@ public class ProfileFragment extends Fragment {
         });
 
         // When you click the image call openImage method
-        image_profile.setOnClickListener(v -> openImage());
+        image_profile.setOnClickListener(v -> showImageImportDialog());
 
         return view;
     }
 
-    private void openImage() {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        // Allow the user to select a particular kind of data and return it
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(intent, IMAGE_REQUEST);
+    private void showImageImportDialog() {
+        // Options to display
+        String options[] = {"Camera", "Gallery"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Pick Image").setItems(options, (dialog, which) -> {
+            // Handle clicks
+            if (which == 0) {
+                // Camera clicked
+                if (!checkCameraPermission()) {
+                    requestCameraPermission();
+                }
+                else {
+                    pickCamera();
+                }
+            }
+            else {
+                // Gallery clicked
+                if (!checkStoragePermission()) {
+                    requestStoragePermission();
+                }
+                else {
+                    pickGallery();
+                }
+            }
+        }).show();
     }
+
+    private void pickGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, IMAGE_PICK_GALLERY_CODE);
+    }
+
+    private void pickCamera() {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.Images.Media.TITLE, "GroupImage");
+        contentValues.put(MediaStore.Images.Media.DESCRIPTION, "GroupImageDescription");
+
+        imageUri = getContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        startActivityForResult(intent, IMAGE_PICK_CAMERA_CODE);
+    }
+
+    private void requestStoragePermission() {
+        ActivityCompat.requestPermissions(getActivity(), storagePermission, STORAGE_REQUEST_CODE);
+    }
+
+    private boolean checkStoragePermission() {
+        return ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == (PackageManager.PERMISSION_GRANTED);
+    }
+
+    private void requestCameraPermission() {
+        ActivityCompat.requestPermissions(getActivity(), cameraPermission, CAMERA_REQUEST_CODE);
+    }
+
+    private boolean checkCameraPermission() {
+        boolean result =  ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) == (PackageManager.PERMISSION_GRANTED);
+        boolean result1 = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == (PackageManager.PERMISSION_GRANTED);
+
+        return result && result1;
+    }
+
 
     // Get file extension
     private String getFileExtension(Uri uri) {
@@ -119,15 +204,16 @@ public class ProfileFragment extends Fragment {
 
     private void uploadImage() throws IOException {
         // Show a progress dialog with a message
-        final ProgressDialog pd = new ProgressDialog(getContext());
-        pd.setMessage("Uploading");
-        pd.show();
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setTitle("Please wait");
+        progressDialog.setMessage("Uploading Image...");
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.show();
 
         // If imageUri has been initialized
         if (imageUri != null) {
             // Set storage reference
-            final StorageReference fileReference = storageReference.child(System.currentTimeMillis()
-                    +"."+getFileExtension(imageUri));
+            storageReference = FirebaseStorage.getInstance().getReference("ProfileImages");
 
             // Compress the image
             Bitmap bmp = MediaStore.Images.Media.getBitmap(Objects.requireNonNull(getContext()).getContentResolver(), imageUri);
@@ -136,7 +222,7 @@ public class ProfileFragment extends Fragment {
             byte[] data = baos.toByteArray();
 
             // Upload the image to data base
-            uploadTask = fileReference.putBytes(data);
+            uploadTask = storageReference.putBytes(data);
 
             //uploadTask = fileReference.putFile(imageUri);
             uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
@@ -146,7 +232,7 @@ public class ProfileFragment extends Fragment {
                         throw task.getException();
                     }
                     // Return the image url
-                    return fileReference.getDownloadUrl();
+                    return storageReference.getDownloadUrl();
                 }
             }).addOnCompleteListener(new OnCompleteListener<Uri>() {
                 @Override
@@ -160,18 +246,18 @@ public class ProfileFragment extends Fragment {
                         map.put("imageURL", mUri);
                         reference.updateChildren(map);
                         // Close the progress dialog
-                        pd.dismiss();
+                        progressDialog.dismiss();
                     }
                     else {
                         Toast.makeText(getContext(), "Failed!", Toast.LENGTH_SHORT).show();
-                        pd.dismiss();
+                        progressDialog.dismiss();
                     }
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-                    pd.dismiss();
+                    progressDialog.dismiss();
                 }
             });
         }
@@ -186,21 +272,33 @@ public class ProfileFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
 
         // if requestCode is 1 and result code is -1 and there is some data (image selected)
-        if (requestCode == IMAGE_REQUEST && resultCode == Activity.RESULT_OK
-            && data != null && data.getData() != null) {
-            // Set imageUri with the given URI data
-            imageUri = data.getData();
-
-            // If you already uploading show a toast message
-            if (uploadTask != null && uploadTask.isInProgress()) {
-                Toast.makeText(getContext(), "Uploading in progress", Toast.LENGTH_SHORT).show();
+        if (resultCode == Activity.RESULT_OK){
+            if (requestCode == IMAGE_PICK_GALLERY_CODE && data != null && data.getData() != null) {
+                // Set imageUri with the given URI data
+                imageUri = data.getData();
+                // If you already uploading show a toast message
+                if (uploadTask != null && uploadTask.isInProgress()) {
+                    Toast.makeText(getContext(), "Uploading in progress", Toast.LENGTH_SHORT).show();
+                }
+                // Else call uploadImage
+                else {
+                    try {
+                        uploadImage();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
-            // Else call uploadImage
-            else {
-                try {
-                    uploadImage();
-                } catch (IOException e) {
-                    e.printStackTrace();
+            else if (requestCode == IMAGE_PICK_CAMERA_CODE) {
+                if (uploadTask != null && uploadTask.isInProgress()) {
+                    Toast.makeText(getContext(), "Uploading in progress", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    try {
+                        uploadImage();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

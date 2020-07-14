@@ -94,12 +94,12 @@ public class MessageActivity extends AppCompatActivity {
     private boolean notify = false;
 
     // Permissions request constants
-    private static final int CAMERA_REQUEST_CODE = 200;
-    private static final int STORAGE_REQUEST_CODE = 400;
+    private static final int CAMERA_REQUEST_CODE = 100;
+    private static final int STORAGE_REQUEST_CODE = 200;
 
     // Image pick constants
-    private static final int IMAGE_PICK_GALLERY_CODE = 1000;
-    private static final int IMAGE_PICK_CAMERA_CODE = 2000;
+    private static final int IMAGE_PICK_GALLERY_CODE = 300;
+    private static final int IMAGE_PICK_CAMERA_CODE = 400;
 
     // Permissions to be requested
     private String[] cameraPermission;
@@ -634,7 +634,7 @@ public class MessageActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            if (requestCode == IMAGE_PICK_GALLERY_CODE) {
+            if (requestCode == IMAGE_PICK_GALLERY_CODE && data != null && data.getData() != null) {
                 // Picked from gallery
                 imageUri = data.getData();
                 try {
