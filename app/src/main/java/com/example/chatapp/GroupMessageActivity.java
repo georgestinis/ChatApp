@@ -31,8 +31,16 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.chatapp.Adapter.GroupMessageAdapter;
+import com.example.chatapp.Fragments.APIService;
 import com.example.chatapp.Model.Group;
 import com.example.chatapp.Model.GroupChat;
+import com.example.chatapp.Model.Participant;
+import com.example.chatapp.Model.User;
+import com.example.chatapp.Notifications.Client;
+import com.example.chatapp.Notifications.Data;
+import com.example.chatapp.Notifications.MyResponse;
+import com.example.chatapp.Notifications.Sender;
+import com.example.chatapp.Notifications.Token;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -43,6 +51,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -56,6 +65,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class GroupMessageActivity extends AppCompatActivity {
 
@@ -97,6 +109,10 @@ public class GroupMessageActivity extends AppCompatActivity {
 
     private ProgressDialog progressDialog;
 
+    private APIService apiService;
+
+    private boolean notify = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,6 +128,8 @@ public class GroupMessageActivity extends AppCompatActivity {
                 startActivity(new Intent(GroupMessageActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
             }
         });
+
+        apiService = Client.getClient("https://fcm.googleapis.com/").create(APIService.class);
 
         // Creates a linear layout for all messages and show them from bottom to start
         recyclerView = findViewById(R.id.recycler_view);
@@ -147,7 +165,8 @@ public class GroupMessageActivity extends AppCompatActivity {
         btn_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                 // Get the message
+                notify = true;
+                // Get the message
                 String msg = text_send.getText().toString();
                 if (!msg.equals("")) {
                     // Call send message function with your user id, your sender id and your message
@@ -163,6 +182,7 @@ public class GroupMessageActivity extends AppCompatActivity {
         btn_attach.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                notify = true;
                 // Pick image from gallery/camera
                 showImageImportDialog();
             }
@@ -266,6 +286,38 @@ public class GroupMessageActivity extends AppCompatActivity {
         reference.child(groupId).child("Messages").child(time+"").setValue(hashMap)
         .addOnFailureListener(e -> Toast.makeText(GroupMessageActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show());
 
+        final String message = msg;
+
+        reference = FirebaseDatabase.getInstance().getReference("Users").child(sender);
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                if (notify) {
+                    DatabaseReference reference1 = FirebaseDatabase.getInstance().getReference("Groups");
+                    reference1.child(groupId).child("Participants").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                Participant participant = snapshot.getValue(Participant.class);
+                                sendNotifications(participant.getUid(), user.getUsername(), message);
+                            }
+                            notify = false;
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
     }
 
@@ -299,12 +351,13 @@ public class GroupMessageActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     Uri downloadUri = task.getResult();
                     String mUri = downloadUri.toString();
+                    String sender = fuser.getUid();
 
                     reference = FirebaseDatabase.getInstance().getReference("Groups");
                     long time = System.currentTimeMillis();
 
                     HashMap<String, Object> hashMap = new HashMap<>();
-                    hashMap.put("sender", fuser.getUid());
+                    hashMap.put("sender", sender);
                     hashMap.put("message", mUri);
                     hashMap.put("time", time);
                     hashMap.put("type", "image");
@@ -319,6 +372,37 @@ public class GroupMessageActivity extends AppCompatActivity {
                                 Toast.makeText(GroupMessageActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                 progressDialog.dismiss();
                             });
+
+                    reference = FirebaseDatabase.getInstance().getReference("Users").child(sender);
+                    reference.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            User user = dataSnapshot.getValue(User.class);
+                            if (notify) {
+                                DatabaseReference reference1 = FirebaseDatabase.getInstance().getReference("Groups");
+                                reference1.child(groupId).child("Participants").addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                            Participant participant = snapshot.getValue(Participant.class);
+                                            sendNotifications(participant.getUid(), user.getUsername(), "sent a photo.");
+                                        }
+                                        notify = false;
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
                 }
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -372,6 +456,42 @@ public class GroupMessageActivity extends AppCompatActivity {
                 messageAdapter = new GroupMessageAdapter(GroupMessageActivity.this, mGroupChat);
                 recyclerView.setAdapter(messageAdapter);
             }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void sendNotifications(String receiver, final String username, final String msg) {
+        DatabaseReference tokens = FirebaseDatabase.getInstance().getReference("Tokens");
+        Query query = tokens.orderByKey().equalTo(receiver);
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Token token = snapshot.getValue(Token.class);
+                    Data data = new Data(fuser.getUid(), R.mipmap.ic_launcher, username + ": " + msg, "New Message", receiver);
+
+                    Sender sender = new Sender(data, token.getToken());
+
+                    apiService.sendNotification(sender).enqueue(new Callback<MyResponse>() {
+                        @Override
+                        public void onResponse(Call<MyResponse> call, Response<MyResponse> response) {
+                            if (response.code() == 200) {
+                                if (response.body().success != 1) {
+                                    Toast.makeText(GroupMessageActivity.this, "Failed!", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        }
+                        @Override
+                        public void onFailure(Call<MyResponse> call, Throwable t) {
+
+                        }
+                    });
+                }
+            }
+
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
