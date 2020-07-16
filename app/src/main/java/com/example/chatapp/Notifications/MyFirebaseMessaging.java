@@ -33,18 +33,31 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
 
         String sented = remoteMessage.getData().get("sented");
         String user = remoteMessage.getData().get("user");
+        String title = remoteMessage.getData().get("title");
+        String[] parts = title.split("-");
 
         SharedPreferences preferences = getSharedPreferences("PREFS", MODE_PRIVATE);
         String currentUser = preferences.getString("currentuser", "none");
+        String currentGroup = preferences.getString("currentgroup", "none");
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-
         if (firebaseUser != null && sented.equals(firebaseUser.getUid())) {
-            if (!currentUser.equals(user)) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    sendOreoNupNotification(remoteMessage);
-                } else {
-                    sendNotification(remoteMessage);
+            if (title.contains("New Group Message")) {
+                if (!currentGroup.equals(parts[1].trim())) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        sendOreoNupNotification(remoteMessage);
+                    } else {
+                        sendNotification(remoteMessage);
+                    }
+                }
+            }
+            else {
+                if (!currentUser.equals(user)) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        sendOreoNupNotification(remoteMessage);
+                    } else {
+                        sendNotification(remoteMessage);
+                    }
                 }
             }
         }
@@ -63,9 +76,35 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
         } catch (NumberFormatException ex) {
             j = Integer.MAX_VALUE;
         }
-        Intent intent = new Intent(this, MessageActivity.class);
+        Intent intent;
         Bundle bundle = new Bundle();
-        bundle.putString("userid", user);
+
+        if (title.contains("New Group Message")) {
+            String[] parts = title.split("-");
+            intent = new Intent(this, GroupMessageActivity.class);
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Groups");
+            reference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        if (snapshot.child("groupTitle").getValue().equals(parts[1].trim())) {
+                            bundle.putString("groupId", (String) snapshot.child("groupId").getValue());
+                            bundle.putString("groupTitle", (String) snapshot.child("groupTitle").getValue());
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+        }
+        else {
+            intent = new Intent(this, MessageActivity.class);
+            bundle.putString("userid", user);
+        }
+        while ((bundle.getString("groupId") == null || bundle.getString("groupTitle") == null) && bundle.getString("userid") == null);
         intent.putExtras(bundle);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, j, intent, PendingIntent.FLAG_ONE_SHOT);
@@ -110,6 +149,8 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         if (snapshot.child("groupTitle").getValue().equals(parts[1].trim())) {
                             bundle.putString("groupId", (String) snapshot.child("groupId").getValue());
+                            bundle.putString("groupTitle", (String) snapshot.child("groupTitle").getValue());
+                            System.out.println(bundle.getString("groupTitle"));
                         }
                     }
                 }
@@ -124,7 +165,8 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
            intent = new Intent(this, MessageActivity.class);
            bundle.putString("userid", user);
         }
-        while (bundle.getString("groupId") == null && bundle.getString("userid") == null);
+        while ((bundle.getString("groupId") == null || bundle.getString("groupTitle") == null) && bundle.getString("userid") == null);
+
         intent.putExtras(bundle);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, j, intent, PendingIntent.FLAG_ONE_SHOT);

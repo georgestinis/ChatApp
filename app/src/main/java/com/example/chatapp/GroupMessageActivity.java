@@ -15,6 +15,7 @@ import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -77,6 +78,7 @@ public class GroupMessageActivity extends AppCompatActivity {
     private TextView group_title;
     private String groupId;
     private String myGroupRole = "";
+    private String groupTitle = "";
 
     private DatabaseReference reference;
 
@@ -146,6 +148,8 @@ public class GroupMessageActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         groupId = intent.getStringExtra("groupId");
+        groupTitle = intent.getStringExtra("groupTitle");
+
         // Get the logged in user
         fuser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -503,6 +507,12 @@ public class GroupMessageActivity extends AppCompatActivity {
         });
     }
 
+    private void currentGroup(String groupId) {
+        SharedPreferences.Editor editor = getSharedPreferences("PREFS", MODE_PRIVATE).edit();
+        editor.putString("currentgroup", groupId);
+        editor.apply();
+    }
+
     private void status(String status) {
         reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
 
@@ -516,12 +526,14 @@ public class GroupMessageActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         status("online");
+        currentGroup(groupTitle);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         status("offline");
+        currentGroup("none");
     }
 
     // Get file extension
