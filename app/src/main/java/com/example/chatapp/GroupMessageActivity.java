@@ -300,7 +300,9 @@ public class GroupMessageActivity extends AppCompatActivity {
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                 Participant participant = snapshot.getValue(Participant.class);
-                                sendNotifications(participant.getUid(), user.getUsername(), message);
+                                if (!participant.getUid().equals(fuser.getUid())) {
+                                    sendNotifications(participant.getUid(), user.getUsername(), message);
+                                }
                             }
                             notify = false;
                         }
@@ -385,7 +387,9 @@ public class GroupMessageActivity extends AppCompatActivity {
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                             Participant participant = snapshot.getValue(Participant.class);
-                                            sendNotifications(participant.getUid(), user.getUsername(), "sent a photo.");
+                                            if (!participant.getUid().equals(fuser.getUid())) {
+                                                sendNotifications(participant.getUid(), user.getUsername(), "sent a photo.");
+                                            }
                                         }
                                         notify = false;
                                     }
@@ -471,7 +475,7 @@ public class GroupMessageActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Token token = snapshot.getValue(Token.class);
-                    Data data = new Data(fuser.getUid(), R.mipmap.ic_launcher, username + ": " + msg, "New Message", receiver);
+                    Data data = new Data(fuser.getUid(), R.mipmap.ic_launcher, username + ": " + msg, "New Message - " + group_title.getText(), receiver);
 
                     Sender sender = new Sender(data, token.getToken());
 

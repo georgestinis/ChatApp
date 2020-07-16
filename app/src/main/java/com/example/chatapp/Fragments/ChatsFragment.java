@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.chatapp.Adapter.ChatAdapter;
-import com.example.chatapp.Adapter.UserAdapter;
 import com.example.chatapp.Model.Chat;
 import com.example.chatapp.Model.Chatlist;
 import com.example.chatapp.Model.User;
@@ -139,7 +138,7 @@ public class ChatsFragment extends Fragment {
     public boolean onContextItemSelected(@NonNull MenuItem item) {
         int position = -1;
         try {
-            position = ((UserAdapter) recyclerView.getAdapter()).getPosition();
+            position = ((ChatAdapter) recyclerView.getAdapter()).getPosition();
         } catch (Exception e) {
             Log.d(TAG, e.getLocalizedMessage(), e);
             return super.onContextItemSelected(item);
