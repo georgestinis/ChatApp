@@ -119,7 +119,7 @@ public class GroupParticipantsAddActivity extends AppCompatActivity {
                 String createdBy = (String) dataSnapshot.child("createdBy").getValue();
                 Long timestamp = (Long) dataSnapshot.child("timestamp").getValue();
 
-                if (fuser != null) {
+                if (fuser != null && groupId != null) {
                     reference1.child(groupId).child("Participants").child(fuser.getUid())
                             .addValueEventListener(new ValueEventListener() {
                                 @Override

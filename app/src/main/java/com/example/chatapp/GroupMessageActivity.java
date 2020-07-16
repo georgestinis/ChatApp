@@ -549,13 +549,13 @@ public class GroupMessageActivity extends AppCompatActivity {
         menu.findItem(R.id.logout).setVisible(false);
         menu.findItem(R.id.create_group).setVisible(false);
         menu.findItem(R.id.show_participants).setVisible(true);
-        if (myGroupRole.equals("creator") || myGroupRole.equals("admin")) {
-            menu.findItem(R.id.add_participant).setVisible(true);
+        if (myGroupRole != null) {
+            if (myGroupRole.equals("creator") || myGroupRole.equals("admin")) {
+                menu.findItem(R.id.add_participant).setVisible(true);
+            } else {
+                menu.findItem(R.id.add_participant).setVisible(false);
+            }
         }
-        else {
-            menu.findItem(R.id.add_participant).setVisible(false);
-        }
-
         return true;
     }
 

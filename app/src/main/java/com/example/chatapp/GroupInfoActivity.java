@@ -193,59 +193,59 @@ public class GroupInfoActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 // Get Group Info
-                String groupId = (String) dataSnapshot.child("groupId").getValue();
+                String groupIdS = (String) dataSnapshot.child("groupId").getValue();
                 String groupTitle = (String) dataSnapshot.child("groupTitle").getValue();
                 String groupIconS = (String) dataSnapshot.child("groupIcon").getValue();
                 String createdByS = (String) dataSnapshot.child("createdBy").getValue();
                 Long timestamp = (Long) dataSnapshot.child("time").getValue();
 
-                // Convert timestamp
-                Calendar calendar = Calendar.getInstance(Locale.ENGLISH);
-                calendar.setTimeInMillis(Long.parseLong(groupId));
-                String dateTime = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
+                if (groupIdS != null) {
+                    // Convert timestamp
+                    Calendar calendar = Calendar.getInstance(Locale.ENGLISH);
+                    calendar.setTimeInMillis(Long.parseLong(groupIdS));
+                    String dateTime = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
 
-                getSupportActionBar().setTitle(groupTitle);
-                loadCreatorInfo(dateTime, createdByS);
+                    getSupportActionBar().setTitle(groupTitle);
+                    loadCreatorInfo(dateTime, createdByS);
 
-                if ("default".equals(groupIconS)) {
-                    groupIcon.setImageResource(R.drawable.ic_group_primary);
-                }
-                else {
-                    Glide.with(getApplicationContext()).load(groupIconS).into(groupIcon);
-                }
+                    if ("default".equals(groupIconS)) {
+                        groupIcon.setImageResource(R.drawable.ic_group_primary);
+                    }
+                    else {
+                        Glide.with(getApplicationContext()).load(groupIconS).into(groupIcon);
+                    }
 
-                if (fuser != null) {
-                    reference1.child(groupId).child("Participants").child(fuser.getUid())
-                            .addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    if (dataSnapshot.exists()) {
-                                        myGroupRole = (String) dataSnapshot.child("role").getValue();
-                                        getSupportActionBar().setSubtitle(fuser.getEmail() + " (" + myGroupRole + ")");
-                                        if (myGroupRole.equals("participant")) {
-                                            edit_group.setVisibility(View.GONE);
-                                            add_participant.setVisibility(View.GONE);
-                                            leave_group.setText("Leave Group");
+                    if (fuser != null) {
+                        reference1.child(groupId).child("Participants").child(fuser.getUid())
+                                .addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        if (dataSnapshot.exists()) {
+                                            myGroupRole = (String) dataSnapshot.child("role").getValue();
+                                            getSupportActionBar().setSubtitle(fuser.getEmail() + " (" + myGroupRole + ")");
+                                            if (myGroupRole.equals("participant")) {
+                                                edit_group.setVisibility(View.GONE);
+                                                add_participant.setVisibility(View.GONE);
+                                                leave_group.setText("Leave Group");
+                                            } else if (myGroupRole.equals("admin")) {
+                                                edit_group.setVisibility(View.GONE);
+                                                add_participant.setVisibility(View.VISIBLE);
+                                                leave_group.setText("Leave Group");
+                                            } else if (myGroupRole.equals("creator")) {
+                                                edit_group.setVisibility(View.VISIBLE);
+                                                add_participant.setVisibility(View.VISIBLE);
+                                                leave_group.setText("Delete Group");
+                                            }
+                                            loadParticipants();
                                         }
-                                        else if (myGroupRole.equals("admin")) {
-                                            edit_group.setVisibility(View.GONE);
-                                            add_participant.setVisibility(View.VISIBLE);
-                                            leave_group.setText("Leave Group");
-                                        }
-                                        else if (myGroupRole.equals("creator")) {
-                                            edit_group.setVisibility(View.VISIBLE);
-                                            add_participant.setVisibility(View.VISIBLE);
-                                            leave_group.setText("Delete Group");
-                                        }
-                                        loadParticipants();
                                     }
-                                }
 
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                }
-                            });
+                                    }
+                                });
+                    }
                 }
             }
 
