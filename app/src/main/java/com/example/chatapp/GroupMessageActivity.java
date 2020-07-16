@@ -475,7 +475,7 @@ public class GroupMessageActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Token token = snapshot.getValue(Token.class);
-                    Data data = new Data(fuser.getUid(), R.mipmap.ic_launcher, username + ": " + msg, "New Message - " + group_title.getText(), receiver);
+                    Data data = new Data(fuser.getUid(), R.mipmap.ic_launcher, username + ": " + msg, "New Group Message - " + group_title.getText(), receiver);
 
                     Sender sender = new Sender(data, token.getToken());
 
