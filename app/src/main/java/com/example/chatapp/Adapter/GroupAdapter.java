@@ -86,7 +86,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.MyViewHolder
                             // Convert timestamp
                             Calendar calendar = Calendar.getInstance(Locale.ENGLISH);
                             calendar.setTimeInMillis(timestamp);
-                            String dateTime = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
+                            String dateTime = DateFormat.format("dd/MM/yy hh:mm aa", calendar).toString();
 
                             holder.group_time.setText(dateTime);
 
