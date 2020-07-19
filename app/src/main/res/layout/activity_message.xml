@@ -31,6 +31,32 @@
                 android:layout_marginStart="25dp"
                 android:textColor="@color/white"
                 android:textStyle="bold"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="8dp"
+                android:layout_marginEnd="10dp">
+                <ImageButton
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:id="@+id/btn_voice_call"
+                    android:src="@drawable/ic_voice_call_white"
+                    android:layout_marginRight="10dp"
+                    android:background="@color/toolbarDark"
+                    android:layout_toLeftOf="@+id/btn_video_call"
+                    />
+
+                <ImageButton
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:id="@+id/btn_video_call"
+                    android:src="@drawable/ic_video_call_white"
+                    android:background="@color/toolbarDark"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    />
+            </RelativeLayout>
         </androidx.appcompat.widget.Toolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -64,7 +90,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:id="@+id/btn_send"
-            android:background="@drawable/ic_action_name"
+            android:background="@drawable/ic_mic_primary"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"/>
 

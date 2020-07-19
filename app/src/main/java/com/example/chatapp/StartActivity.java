@@ -11,17 +11,15 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 // TODO CLEAR NOTIFICATIONS WHEN MESSAGE IS SEEN
-// TODO SEND IMAGES, VOICE MESSAGES
-// TODO MAKE DIFFERENT XML FOR USERS AND FOR CHATLIST
-// TODO GET CHATS INSIDE CHATLIST
-// TODO MESSAGE TIME
-// TODO PRIVATE ALL VARIABLES
+// TODO VOICE MESSAGES
+// TODO PROFILE EDIT, DELETE
+// TODO GET CHATS INSIDE CHATLISΤ (PROBABLY NOT WORTH IT)
 
 public class StartActivity extends AppCompatActivity {
 
-    private Button login , register;
+    private Button btn_login, btn_register;
 
-    FirebaseUser firebaseUser;
+    private FirebaseUser firebaseUser;
 
     @Override
     protected void onStart() {
@@ -42,17 +40,17 @@ public class StartActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
 
-        login = findViewById(R.id.login);
-        register = findViewById(R.id.register);
+        btn_login = findViewById(R.id.login);
+        btn_register = findViewById(R.id.register);
 
-        login.setOnClickListener(new View.OnClickListener() {
+        btn_login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(StartActivity.this, LoginActivity.class));
             }
         });
 
-        register.setOnClickListener(new View.OnClickListener() {
+        btn_register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(StartActivity.this, RegisterActivity.class));

@@ -7,7 +7,6 @@ import androidx.appcompat.widget.Toolbar;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -22,9 +21,9 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 public class LoginActivity extends AppCompatActivity {
 
     private MaterialEditText email, password;
-    private Button login;
+    private Button btn_login;
 
-    private FirebaseAuth auth;
+    private FirebaseAuth firebaseAuth;
     private TextView forgot_password;
 
     @Override
@@ -37,11 +36,11 @@ public class LoginActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Login");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        auth = FirebaseAuth.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance();
 
         email = findViewById(R.id.email);
         password = findViewById(R.id.password);
-        login = findViewById(R.id.btn_login);
+        btn_login = findViewById(R.id.btn_login);
         forgot_password = findViewById(R.id.forgot_password);
 
         forgot_password.setOnClickListener(new View.OnClickListener() {
@@ -52,7 +51,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         // When login is clicked check if fields are empty, if login is successful open main activity
-        login.setOnClickListener(new View.OnClickListener() {
+        btn_login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String txt_email = email.getText().toString();
@@ -62,7 +61,7 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(LoginActivity.this, "All fields are required", Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    auth.signInWithEmailAndPassword(txt_email, txt_password)
+                    firebaseAuth.signInWithEmailAndPassword(txt_email, txt_password)
                             .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                                 @Override
                                 public void onComplete(@NonNull Task<AuthResult> task) {

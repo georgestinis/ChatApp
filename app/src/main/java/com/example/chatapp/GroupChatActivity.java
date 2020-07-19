@@ -8,7 +8,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
@@ -26,11 +25,8 @@ import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.example.chatapp.Model.User;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -38,11 +34,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
@@ -51,13 +44,10 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Objects;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 public class GroupChatActivity extends AppCompatActivity {
 
-    private FirebaseUser fuser;
+    private FirebaseUser firebaseUser;
 
     // Permissions request constants
     private static final int CAMERA_REQUEST_CODE = 100;
@@ -81,7 +71,7 @@ public class GroupChatActivity extends AppCompatActivity {
 
     private ImageView groupIcon;
     private EditText groupTitle;
-    private Button groupBtn;
+    private Button btn_group;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,18 +90,27 @@ public class GroupChatActivity extends AppCompatActivity {
             }
         });
 
+        cameraPermission = new String[]{
+                Manifest.permission.CAMERA,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+        };
+
+        storagePermission = new String[]{
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+        };
+
         groupIcon = findViewById(R.id.groupIcon);
         groupTitle = findViewById(R.id.groupTitle);
-        groupBtn = findViewById(R.id.createGroupBtn);
+        btn_group = findViewById(R.id.createGroupBtn);
 
-        fuser = FirebaseAuth.getInstance().getCurrentUser();
-        if (fuser != null) {
-            getSupportActionBar().setSubtitle(fuser.getDisplayName());
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            getSupportActionBar().setSubtitle(firebaseUser.getDisplayName());
         }
 
         groupIcon.setOnClickListener(v -> showImagePickDialog());
 
-        groupBtn.setOnClickListener(new View.OnClickListener() {
+        btn_group.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
@@ -186,19 +185,19 @@ public class GroupChatActivity extends AppCompatActivity {
         hashMap.put("groupTitle", groupTitle);
         hashMap.put("groupIcon", groupIcon);
         hashMap.put("time", time);
-        hashMap.put("createdBy", fuser.getUid());
+        hashMap.put("createdBy", firebaseUser.getUid());
 
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Groups");
         reference.child(time + "").setValue(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 HashMap<String, Object> hashMap1 = new HashMap<>();
-                hashMap1.put("uid", fuser.getUid());
+                hashMap1.put("uid", firebaseUser.getUid());
                 hashMap1.put("role", "creator");
                 hashMap1.put("timestamp", time);
 
                 DatabaseReference reference1 = FirebaseDatabase.getInstance().getReference("Groups");
-                reference1.child(time + "").child("Participants").child(fuser.getUid()).setValue(hashMap1)
+                reference1.child(time + "").child("Participants").child(firebaseUser.getUid()).setValue(hashMap1)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
@@ -348,8 +347,8 @@ public class GroupChatActivity extends AppCompatActivity {
     }
 
     private void status(String status) {
-        if (fuser != null) {
-            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
+        if (firebaseUser != null) {
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
 
             HashMap<String, Object> hashMap = new HashMap<>();
             hashMap.put("status", status);

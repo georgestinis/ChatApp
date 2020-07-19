@@ -41,16 +41,11 @@ public class GroupInfoActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private ImageView groupIcon;
-    private TextView createdBy;
-    private TextView edit_group;
-    private TextView add_participant;
-    private TextView leave_group;
-    private TextView participants;
+    private TextView createdBy, edit_group, add_participant, leave_group, participants;
 
-    private String groupId;
-    private String myGroupRole;
+    private String groupId, myGroupRole;
 
-    private FirebaseUser fuser;
+    private FirebaseUser firebaseUser;
 
     private List<User> allParticipants;
     private ParticipantAdapter participantAdapter;
@@ -81,7 +76,7 @@ public class GroupInfoActivity extends AppCompatActivity {
 
         groupId = getIntent().getStringExtra("groupId");
 
-        fuser = FirebaseAuth.getInstance().getCurrentUser();
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         loadGroupInfo();
 
         add_participant.setOnClickListener(new View.OnClickListener() {
@@ -145,7 +140,7 @@ public class GroupInfoActivity extends AppCompatActivity {
 
     private void leaveGroup() {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Groups");
-        reference.child(groupId).child("Participants").child(fuser.getUid()).removeValue()
+        reference.child(groupId).child("Participants").child(firebaseUser.getUid()).removeValue()
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -215,14 +210,14 @@ public class GroupInfoActivity extends AppCompatActivity {
                         Glide.with(getApplicationContext()).load(groupIconS).into(groupIcon);
                     }
 
-                    if (fuser != null) {
-                        reference1.child(groupId).child("Participants").child(fuser.getUid())
+                    if (firebaseUser != null) {
+                        reference1.child(groupId).child("Participants").child(firebaseUser.getUid())
                                 .addValueEventListener(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                         if (dataSnapshot.exists()) {
                                             myGroupRole = (String) dataSnapshot.child("role").getValue();
-                                            getSupportActionBar().setSubtitle(fuser.getEmail() + " (" + myGroupRole + ")");
+                                            getSupportActionBar().setSubtitle(firebaseUser.getEmail() + " (" + myGroupRole + ")");
                                             if (myGroupRole.equals("participant")) {
                                                 edit_group.setVisibility(View.GONE);
                                                 add_participant.setVisibility(View.GONE);
@@ -258,7 +253,7 @@ public class GroupInfoActivity extends AppCompatActivity {
 
     private void loadParticipants() {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Groups").child(groupId).child("Participants");
-        if (fuser != null) {
+        if (firebaseUser != null) {
             reference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
@@ -274,7 +269,7 @@ public class GroupInfoActivity extends AppCompatActivity {
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot1) {
                                 for (DataSnapshot snapshot1 : dataSnapshot1.getChildren()) {
                                     User user = snapshot1.getValue(User.class);
-                                    if (!fuser.getUid().equals(user.getId())) {
+                                    if (!firebaseUser.getUid().equals(user.getId())) {
                                         if(!allParticipants.contains(user)) {
                                             allParticipants.add(user);
                                         }

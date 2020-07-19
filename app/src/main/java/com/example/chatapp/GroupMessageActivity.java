@@ -76,20 +76,17 @@ public class GroupMessageActivity extends AppCompatActivity {
 
     private CircleImageView group_icon;
     private TextView group_title;
-    private String groupId;
-    private String myGroupRole = "";
-    private String groupTitle = "";
+    private String groupId, myGroupRole = "", groupTitle = "";
 
     private DatabaseReference reference;
 
-    private ImageButton btn_send;
-    private ImageButton btn_attach;
+    private ImageButton btn_send, btn_attach;
     private EditText text_send;
 
     private List<GroupChat> mGroupChat;
     private GroupMessageAdapter messageAdapter;
 
-    private FirebaseUser fuser;
+    private FirebaseUser firebaseUser;
 
     // Permissions request constants
     private static final int CAMERA_REQUEST_CODE = 100;
@@ -151,7 +148,7 @@ public class GroupMessageActivity extends AppCompatActivity {
         groupTitle = intent.getStringExtra("groupTitle");
 
         // Get the logged in user
-        fuser = FirebaseAuth.getInstance().getCurrentUser();
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         cameraPermission = new String[]{
                 Manifest.permission.CAMERA,
@@ -174,7 +171,7 @@ public class GroupMessageActivity extends AppCompatActivity {
                 String msg = text_send.getText().toString();
                 if (!msg.equals("")) {
                     // Call send message function with your user id, your sender id and your message
-                    sendMessage(fuser.getUid(), msg);
+                    sendMessage(firebaseUser.getUid(), msg);
                 }
                 else {
                     Toast.makeText(GroupMessageActivity.this, "You can't send empty message", Toast.LENGTH_SHORT).show();
@@ -260,7 +257,7 @@ public class GroupMessageActivity extends AppCompatActivity {
 
     private void loadMyGroupRole() {
         reference = FirebaseDatabase.getInstance().getReference("Groups");
-        reference.child(groupId).child("Participants").child(fuser.getUid())
+        reference.child(groupId).child("Participants").child(firebaseUser.getUid())
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -304,7 +301,7 @@ public class GroupMessageActivity extends AppCompatActivity {
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                 Participant participant = snapshot.getValue(Participant.class);
-                                if (!participant.getUid().equals(fuser.getUid())) {
+                                if (!participant.getUid().equals(firebaseUser.getUid())) {
                                     sendNotifications(participant.getUid(), user.getUsername(), message);
                                 }
                             }
@@ -357,7 +354,7 @@ public class GroupMessageActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     Uri downloadUri = task.getResult();
                     String mUri = downloadUri.toString();
-                    String sender = fuser.getUid();
+                    String sender = firebaseUser.getUid();
 
                     reference = FirebaseDatabase.getInstance().getReference("Groups");
                     long time = System.currentTimeMillis();
@@ -391,7 +388,7 @@ public class GroupMessageActivity extends AppCompatActivity {
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                             Participant participant = snapshot.getValue(Participant.class);
-                                            if (!participant.getUid().equals(fuser.getUid())) {
+                                            if (!participant.getUid().equals(firebaseUser.getUid())) {
                                                 sendNotifications(participant.getUid(), user.getUsername(), "sent a photo.");
                                             }
                                         }
@@ -437,7 +434,7 @@ public class GroupMessageActivity extends AppCompatActivity {
                     else {
                         Glide.with(getApplicationContext()).load(group.getGroupIcon()).into(group_icon);
                     }
-                    readMessages(fuser.getUid());
+                    readMessages(firebaseUser.getUid());
                 }
             }
 
@@ -479,7 +476,7 @@ public class GroupMessageActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Token token = snapshot.getValue(Token.class);
-                    Data data = new Data(fuser.getUid(), R.mipmap.ic_launcher, username + ": " + msg, "New Group Message - " + group_title.getText(), receiver);
+                    Data data = new Data(firebaseUser.getUid(), R.mipmap.ic_launcher, username + ": " + msg, "New Group Message - " + group_title.getText(), receiver);
 
                     Sender sender = new Sender(data, token.getToken());
 
@@ -514,7 +511,7 @@ public class GroupMessageActivity extends AppCompatActivity {
     }
 
     private void status(String status) {
-        reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
+        reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
 
         HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put("status", status);

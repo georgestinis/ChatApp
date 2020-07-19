@@ -32,12 +32,12 @@ public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapte
     private Context mContext;
     private List<GroupChat> mGroupChat;
 
-    private FirebaseUser fuser;
+    private FirebaseUser firebaseUser;
 
     public GroupMessageAdapter(Context mContext, List<GroupChat> mGroupChat) {
         this.mContext = mContext;
         this.mGroupChat = mGroupChat;
-        fuser = FirebaseAuth.getInstance().getCurrentUser();
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
     }
 
     @NonNull
@@ -107,10 +107,10 @@ public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapte
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
-        public ImageView profile_image;
-        public TextView name;
-        public TextView show_message;
-        public ImageView image_message;
+        private ImageView profile_image;
+        private TextView name;
+        private TextView show_message;
+        private ImageView image_message;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -124,7 +124,7 @@ public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapte
     @Override
     public int getItemViewType(int position) {
         // If i'm the sender show message on right else show it on left
-        if (mGroupChat.get(position).getSender().equals(fuser.getUid())) {
+        if (mGroupChat.get(position).getSender().equals(firebaseUser.getUid())) {
             return  MSG_TYPE_RIGHT;
         }
         else {

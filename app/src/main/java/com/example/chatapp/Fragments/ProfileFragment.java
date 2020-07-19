@@ -58,7 +58,7 @@ public class ProfileFragment extends Fragment {
     private TextView username;
 
     private DatabaseReference reference;
-    private FirebaseUser fuser;
+    private FirebaseUser firebaseUser;
 
     // Permissions request constants
     private static final int CAMERA_REQUEST_CODE = 100;
@@ -97,9 +97,9 @@ public class ProfileFragment extends Fragment {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
         };
 
-        fuser = FirebaseAuth.getInstance().getCurrentUser();
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         // Get current's user id
-        reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
+        reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
 
         reference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -241,7 +241,7 @@ public class ProfileFragment extends Fragment {
                         Uri downloadUri = task.getResult();
                         String mUri = downloadUri.toString();
                         // Put image url to users reference
-                        reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
+                        reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
                         HashMap<String, Object> map = new HashMap<>();
                         map.put("imageURL", mUri);
                         reference.updateChildren(map);

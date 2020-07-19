@@ -27,13 +27,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
     private List<Chat> mChat;
     private String imageurl;
 
-    private FirebaseUser fuser;
+    private FirebaseUser firebaseUser;
 
     public MessageAdapter(Context mContext, List<Chat> mChat, String imageurl) {
         this.mContext = mContext;
         this.mChat = mChat;
         this.imageurl = imageurl;
-        fuser = FirebaseAuth.getInstance().getCurrentUser();
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
     }
 
     @NonNull
@@ -69,7 +69,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
             holder.show_message.setVisibility(View.VISIBLE);
             holder.show_message.setText(chat.getMessage());
         }
-        else if (chat.getType().equals("image")){
+        else if (chat.getType().equals("image")) {
             holder.image_message.setVisibility(View.VISIBLE);
             holder.show_message.setVisibility(View.GONE);
             if ("default".equals(chat.getMessage())) {
@@ -78,6 +78,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
             else {
                 Glide.with(mContext).load(chat.getMessage()).into(holder.image_message);
             }
+        }
+        else if (chat.getType().equals("audio")) {
+            holder.image_message.setVisibility(View.GONE);
+            holder.show_message.setVisibility(View.GONE);
         }
 
         // Check if it's the last message
@@ -102,10 +106,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView show_message;
-        public ImageView profile_image;
-        public TextView txt_seen;
-        public ImageView image_message;
+        private TextView show_message;
+        private ImageView profile_image;
+        private TextView txt_seen;
+        private ImageView image_message;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -119,7 +123,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
     @Override
     public int getItemViewType(int position) {
         // If i'm the sender show message on right else show it on left
-        if (mChat.get(position).getSender().equals(fuser.getUid())) {
+        if (mChat.get(position).getSender().equals(firebaseUser.getUid())) {
             return  MSG_TYPE_RIGHT;
         }
         else {

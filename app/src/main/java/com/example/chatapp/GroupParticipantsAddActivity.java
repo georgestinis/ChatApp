@@ -30,10 +30,9 @@ public class GroupParticipantsAddActivity extends AppCompatActivity {
     private ParticipantAdapter participantAdapter;
     private RecyclerView recyclerView;
     private List<User> allUsers;
-    private FirebaseUser fuser;
+    private FirebaseUser firebaseUser;
 
-    private String groupId;
-    private String myGroupRole;
+    private String groupId, myGroupRole;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +45,7 @@ public class GroupParticipantsAddActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        fuser = FirebaseAuth.getInstance().getCurrentUser();
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         allUsers = new ArrayList<>();
 
@@ -119,8 +118,8 @@ public class GroupParticipantsAddActivity extends AppCompatActivity {
                 String createdBy = (String) dataSnapshot.child("createdBy").getValue();
                 Long timestamp = (Long) dataSnapshot.child("timestamp").getValue();
 
-                if (fuser != null && groupId != null) {
-                    reference1.child(groupId).child("Participants").child(fuser.getUid())
+                if (firebaseUser != null && groupId != null) {
+                    reference1.child(groupId).child("Participants").child(firebaseUser.getUid())
                             .addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -153,8 +152,8 @@ public class GroupParticipantsAddActivity extends AppCompatActivity {
     }
 
     private void status(String status) {
-        if (fuser != null) {
-            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
+        if (firebaseUser != null) {
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
 
             HashMap<String, Object> hashMap = new HashMap<>();
             hashMap.put("status", status);

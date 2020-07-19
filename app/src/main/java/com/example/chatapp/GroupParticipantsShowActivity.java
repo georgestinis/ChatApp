@@ -30,10 +30,9 @@ public class GroupParticipantsShowActivity extends AppCompatActivity {
     private ParticipantAdapter participantAdapter;
     private RecyclerView recyclerView;
     private List<User> allParticipants;
-    private FirebaseUser fuser;
+    private FirebaseUser firebaseUser;
 
-    private String groupId;
-    private String myGroupRole;
+    private String groupId, myGroupRole;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +45,7 @@ public class GroupParticipantsShowActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        fuser = FirebaseAuth.getInstance().getCurrentUser();
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         allParticipants = new ArrayList<>();
 
@@ -60,7 +59,7 @@ public class GroupParticipantsShowActivity extends AppCompatActivity {
 
     private void getAllUsers() {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Groups").child(groupId).child("Participants");
-        if (fuser != null) {
+        if (firebaseUser != null) {
             reference.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull final DataSnapshot dataSnapshot) {
@@ -76,7 +75,7 @@ public class GroupParticipantsShowActivity extends AppCompatActivity {
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot1) {
                                 for (DataSnapshot snapshot1 : dataSnapshot1.getChildren()) {
                                     User user = snapshot1.getValue(User.class);
-                                    if (!fuser.getUid().equals(user.getId())) {
+                                    if (!firebaseUser.getUid().equals(user.getId())) {
                                         if(!allParticipants.contains(user)) {
                                             allParticipants.add(user);
                                         }
@@ -117,8 +116,8 @@ public class GroupParticipantsShowActivity extends AppCompatActivity {
                 String createdBy = (String) dataSnapshot.child("createdBy").getValue();
                 Long timestamp = (Long) dataSnapshot.child("timestamp").getValue();
 
-                if (fuser != null) {
-                    reference1.child(groupId).child("Participants").child(fuser.getUid())
+                if (firebaseUser != null) {
+                    reference1.child(groupId).child("Participants").child(firebaseUser.getUid())
                             .addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -152,8 +151,8 @@ public class GroupParticipantsShowActivity extends AppCompatActivity {
 
 
     private void status(String status) {
-        if (fuser != null) {
-            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
+        if (firebaseUser != null) {
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
 
             HashMap<String, Object> hashMap = new HashMap<>();
             hashMap.put("status", status);

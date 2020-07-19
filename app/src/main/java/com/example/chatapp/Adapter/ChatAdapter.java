@@ -39,7 +39,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder>{
     private List<User> mUsers;
     private int position;
 
-    String theLastMessage;
+    private String theLastMessage;
 
     public ChatAdapter(Context mContext, List<User> mUsers) {
         this.mContext = mContext;
@@ -109,8 +109,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder>{
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
 
-        public TextView username;
-        public ImageView profile_image;
+        private TextView username;
+        private ImageView profile_image;
         private ImageView img_on;
         private ImageView img_off;
         private TextView last_msg;

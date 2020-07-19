@@ -126,8 +126,8 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.MyViewHolder
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
-        public TextView group_title;
-        public ImageView group_icon;
+        private TextView group_title;
+        private ImageView group_icon;
         private TextView last_msg;
         private TextView group_time;
 

@@ -40,8 +40,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
     private boolean isFriend;
     private int position;
 
-    String theLastMessage;
-
     public UserAdapter(Context mContext, List<User> mUsers, boolean isFriend) {
         this.mContext = mContext;
         this.mUsers = mUsers;
@@ -115,8 +113,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
 
-        public TextView username;
-        public ImageView profile_image;
+        private TextView username;
+        private ImageView profile_image;
         private ImageView img_on;
         private ImageView img_off;
         private RelativeLayout long_click_menu;

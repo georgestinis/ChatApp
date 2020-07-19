@@ -20,7 +20,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.text.format.DateFormat;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
@@ -35,8 +34,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -49,9 +46,7 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Locale;
 
 public class GroupEditActivity extends AppCompatActivity {
     // Permissions request constants
@@ -74,7 +69,7 @@ public class GroupEditActivity extends AppCompatActivity {
 
     private ImageView groupIcon;
     private EditText groupTitle;
-    private Button groupBtn;
+    private Button btn_group;
 
     private String groupId;
 
@@ -94,7 +89,7 @@ public class GroupEditActivity extends AppCompatActivity {
 
         groupIcon = findViewById(R.id.groupIcon);
         groupTitle = findViewById(R.id.groupTitle);
-        groupBtn = findViewById(R.id.createGroupBtn);
+        btn_group = findViewById(R.id.createGroupBtn);
 
         groupId = getIntent().getStringExtra("groupId");
 
@@ -122,7 +117,7 @@ public class GroupEditActivity extends AppCompatActivity {
         });
 
         // Handle click event
-        groupBtn.setOnClickListener(new View.OnClickListener() {
+        btn_group.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {

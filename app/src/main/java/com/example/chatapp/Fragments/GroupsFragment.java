@@ -38,7 +38,7 @@ public class GroupsFragment extends Fragment {
     private List<Group> mGroups;
     private EditText search_groups;
 
-    private FirebaseUser fuser;
+    private FirebaseUser firebaseUser;
     private DatabaseReference reference;
 
     @Override
@@ -50,7 +50,7 @@ public class GroupsFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        fuser = FirebaseAuth.getInstance().getCurrentUser();
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         loadGroupChatsList();
 
@@ -84,7 +84,7 @@ public class GroupsFragment extends Fragment {
     private void loadGroupChatsList() {
         mGroups = new ArrayList<>();
 
-        if (fuser != null) {
+        if (firebaseUser != null) {
             reference = FirebaseDatabase.getInstance().getReference("Groups");
             Query query = reference.orderByChild("time");
             query.addValueEventListener(new ValueEventListener() {
@@ -92,7 +92,7 @@ public class GroupsFragment extends Fragment {
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     mGroups.clear();
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        if (snapshot.child("Participants").child(fuser.getUid()).exists()) {
+                        if (snapshot.child("Participants").child(firebaseUser.getUid()).exists()) {
                             Group group = snapshot.getValue(Group.class);
                             mGroups.add(group);
                         }
@@ -113,7 +113,7 @@ public class GroupsFragment extends Fragment {
     private void searchGroupChatsList(String search_query) {
         mGroups = new ArrayList<>();
 
-        if (fuser != null) {
+        if (firebaseUser != null) {
             reference = FirebaseDatabase.getInstance().getReference("Groups");
             Query query = reference.orderByChild("time");
             query.addValueEventListener(new ValueEventListener() {
@@ -121,7 +121,7 @@ public class GroupsFragment extends Fragment {
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     mGroups.clear();
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        if (snapshot.child("Participants").child(fuser.getUid()).exists()) {
+                        if (snapshot.child("Participants").child(firebaseUser.getUid()).exists()) {
                             if (snapshot.child("groupTitle").toString().toLowerCase().contains(search_query.toLowerCase())) {
                                 Group group = snapshot.getValue(Group.class);
                                 mGroups.add(group);

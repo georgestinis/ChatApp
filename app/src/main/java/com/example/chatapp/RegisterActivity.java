@@ -25,8 +25,8 @@ import java.util.HashMap;
 public class RegisterActivity extends AppCompatActivity {
 
     private MaterialEditText username, email, password;
-    private Button register;
-    private FirebaseAuth auth;
+    private Button btn_register;
+    private FirebaseAuth firebaseAuth;
     private DatabaseReference reference;
 
     @Override
@@ -42,12 +42,12 @@ public class RegisterActivity extends AppCompatActivity {
         username = findViewById(R.id.username);
         email = findViewById(R.id.email);
         password = findViewById(R.id.password);
-        register = findViewById(R.id.btn_register);
+        btn_register = findViewById(R.id.btn_register);
 
-        auth = FirebaseAuth.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance();
 
         // When register is clicked check if fields are empty and if password is longer than 6 characters and call register method
-        register.setOnClickListener(new View.OnClickListener() {
+        btn_register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String txt_username = username.getText().toString();
@@ -69,12 +69,12 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void register(final String username, final String email, final String password) {
         // If register task is successful add a reference to Users
-        auth.createUserWithEmailAndPassword(email, password)
+        firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            FirebaseUser firebaseUser = auth.getCurrentUser();
+                            FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
                             assert firebaseUser != null;
                             String userid = firebaseUser.getUid();
 

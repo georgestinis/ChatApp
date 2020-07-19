@@ -45,8 +45,8 @@ public class ChatsFragment extends Fragment {
     private ChatAdapter chatAdapter;
     private List<User> mUsers;
 
-    FirebaseUser fuser;
-    DatabaseReference reference;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference reference;
 
     private Stack<Chatlist> usersList;
 
@@ -59,12 +59,12 @@ public class ChatsFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        fuser = FirebaseAuth.getInstance().getCurrentUser();
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         usersList = new Stack<>();
 
-        if (fuser != null) {
-            Query reference1 = FirebaseDatabase.getInstance().getReference("Chatlist").child(fuser.getUid()).orderByChild("time");
+        if (firebaseUser != null) {
+            Query reference1 = FirebaseDatabase.getInstance().getReference("Chatlist").child(firebaseUser.getUid()).orderByChild("time");
             // Get every user from chatlist reference
             reference1.addValueEventListener(new ValueEventListener() {
                 @Override
@@ -98,10 +98,10 @@ public class ChatsFragment extends Fragment {
     }
 
     private void updateToken(String token) {
-        if (fuser != null) {
+        if (firebaseUser != null) {
             DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Tokens");
             Token token1 = new Token(token);
-            reference.child(fuser.getUid()).setValue(token1);
+            reference.child(firebaseUser.getUid()).setValue(token1);
         }
     }
 
