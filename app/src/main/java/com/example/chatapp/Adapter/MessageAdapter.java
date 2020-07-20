@@ -62,6 +62,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
         }
     }
 
+    public MediaPlayer getMediaPlayer() {
+        return mediaPlayer;
+    }
+
     // Method to get each chat message and show it
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
@@ -107,15 +111,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
         holder.audio_message.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                System.out.println(TimeUnit.MILLISECONDS.toSeconds(chat.getLength()));
-                if (timer != null && mediaPlayer != null && mediaPlayer.isPlaying()) {
+                //timer != null &&
+                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
                     mediaPlayer.stop();
-                    timer.cancel();
-                    holder.counter = 0;
+                    // timer.cancel();
+                    // holder.counter = 0;
                 }
-                timer = new Timer();
+                //timer = new Timer();
                 mediaPlayer = new MediaPlayer();
-                holder.audio_length.setProgress(holder.counter);
+                //holder.audio_length.setProgress(holder.counter);
                 try {
                     mediaPlayer.setDataSource(chat.getMessage());
                     mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -123,18 +127,18 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
                         public void onPrepared(MediaPlayer mp) {
                             mp.start();
 
-                            TimerTask timerTask = new TimerTask() {
-                                @Override
-                                public void run() {
-                                    holder.counter += (int) (100/TimeUnit.MILLISECONDS.toSeconds(chat.getLength()));
-                                    holder.audio_length.setProgress(holder.counter);
-                                    if (holder.counter == 100){
-                                        timer.cancel();
-                                        holder.counter = 0;
-                                    }
-                                }
-                            };
-                            timer.schedule(timerTask, 0, 1000);
+//                            TimerTask timerTask = new TimerTask() {
+//                                @Override
+//                                public void run() {
+//                                    holder.counter += (int) (100/(TimeUnit.MILLISECONDS.toSeconds(chat.getLength()) + 2));
+//                                    holder.audio_length.setProgress(holder.counter);
+//                                    if (holder.counter >= 100){
+//                                        timer.cancel();
+//                                        holder.counter = 0;
+//                                    }
+//                                }
+//                            };
+//                            timer.schedule(timerTask, 0, 1000);
                         }
                     });
                     mediaPlayer.prepare();
@@ -165,7 +169,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        private int counter = 0;
+//        private int counter = 0;
         private TextView show_message, txt_seen;
         private ImageView profile_image, image_message, play_audio;
         private RelativeLayout audio_message;
