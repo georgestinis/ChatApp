@@ -18,10 +18,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -315,6 +315,7 @@ public class MessageActivity extends AppCompatActivity {
         hashMap.put("message", message);
         hashMap.put("isseen", false);
         hashMap.put("type", "text");
+        hashMap.put("length", 0);
         hashMap.put("time", time);
         hashMap.put("deletedfrom", "none");
 
@@ -563,6 +564,7 @@ public class MessageActivity extends AppCompatActivity {
                     hashMap.put("message", mUri);
                     hashMap.put("time", time);
                     hashMap.put("type", "image");
+                    hashMap.put("length", 0);
                     hashMap.put("deletedfrom", "none");
 
                     reference.child("Chats").push().setValue(hashMap)
@@ -840,165 +842,175 @@ public class MessageActivity extends AppCompatActivity {
         mRecorder.stop();
         mRecorder.release();
         mRecorder = null;
-        
         uploadAudio(firebaseUser.getUid(), userid);
     }
 
+    private static int getDuration(File file) {
+        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+        mediaMetadataRetriever.setDataSource(file.getAbsolutePath());
+        String durationStr = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        return Integer.parseInt(durationStr);
+    }
+
     private void uploadAudio(String sender, String receiver) {
-        ProgressDialog pd = new ProgressDialog(this);
-        pd.setTitle("Please wait");
-        pd.setMessage("Sending Audio...");
-        pd.setCanceledOnTouchOutside(false);
-        pd.show();
-
         final StorageReference storageReference = FirebaseStorage.getInstance().getReference("AudioRecorded").child(System.currentTimeMillis()+ ".3gpp");
+        File file = new File(mFileName);
+        Uri uri = Uri.fromFile(file);
+        int duration = getDuration(file);
+        // Max 5min duration
+        if (duration <= 300000) {
+            ProgressDialog pd = new ProgressDialog(this);
+            pd.setTitle("Please wait");
+            pd.setMessage("Sending Audio...");
+            pd.setCanceledOnTouchOutside(false);
+            pd.show();
 
-        Uri uri = Uri.fromFile(new File(mFileName));
+            StorageTask uploadTask;
 
-        StorageTask uploadTask;
+            uploadTask = storageReference.putFile(uri);
 
-        uploadTask = storageReference.putFile(uri);
-
-        uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-            @Override
-            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                if (!task.isSuccessful()) {
-                    throw task.getException();
+            uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                @Override
+                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+                    return storageReference.getDownloadUrl();
                 }
-                return storageReference.getDownloadUrl();
-            }
-        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-                if (task.isSuccessful()) {
-                    Uri downloadUri = task.getResult();
-                    String mUri = downloadUri.toString();
+            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                @Override
+                public void onComplete(@NonNull Task<Uri> task) {
+                    if (task.isSuccessful()) {
+                        Uri downloadUri = task.getResult();
+                        String mUri = downloadUri.toString();
 
-                    reference = FirebaseDatabase.getInstance().getReference();
-                    long time = System.currentTimeMillis();
+                        reference = FirebaseDatabase.getInstance().getReference();
+                        long time = System.currentTimeMillis();
 
-                    HashMap<String, Object> hashMap = new HashMap<>();
-                    hashMap.put("sender", sender);
-                    hashMap.put("receiver", receiver);
-                    hashMap.put("isseen", false);
-                    hashMap.put("message", mUri);
-                    hashMap.put("time", time);
-                    hashMap.put("type", "audio");
-                    hashMap.put("deletedfrom", "none");
-                    reference.child("Chats").push().setValue(hashMap)
-                            .addOnSuccessListener(e -> {
-                                pd.dismiss();
-                            })
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(MessageActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                                pd.dismiss();
-                            });
+                        HashMap<String, Object> hashMap = new HashMap<>();
+                        hashMap.put("sender", sender);
+                        hashMap.put("receiver", receiver);
+                        hashMap.put("isseen", false);
+                        hashMap.put("message", mUri);
+                        hashMap.put("time", time);
+                        hashMap.put("type", "audio");
+                        hashMap.put("length", duration);
+                        hashMap.put("deletedfrom", "none");
+                        reference.child("Chats").push().setValue(hashMap)
+                                .addOnSuccessListener(e -> {
+                                    pd.dismiss();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(MessageActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    pd.dismiss();
+                                });
 
-                    final DatabaseReference friendsRef = FirebaseDatabase.getInstance().getReference("Friends")
-                            .child(sender)
-                            .child(receiver);
-                    final DatabaseReference friendsRefReceiver = FirebaseDatabase.getInstance().getReference("Friends")
-                            .child(receiver)
-                            .child(sender);
+                        final DatabaseReference friendsRef = FirebaseDatabase.getInstance().getReference("Friends")
+                                .child(sender)
+                                .child(receiver);
+                        final DatabaseReference friendsRefReceiver = FirebaseDatabase.getInstance().getReference("Friends")
+                                .child(receiver)
+                                .child(sender);
 
-                    friendsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if (!dataSnapshot.exists()) {
-                                friendsRef.child("id").setValue(receiver);
+                        friendsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (!dataSnapshot.exists()) {
+                                    friendsRef.child("id").setValue(receiver);
+                                }
+                                return;
                             }
-                            return;
-                        }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                        }
-                    });
-
-                    friendsRefReceiver.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if (!dataSnapshot.exists()) {
-                                friendsRefReceiver.child("id").setValue(sender);
                             }
-                            return;
-                        }
+                        });
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
-
-                    final DatabaseReference chatRef = FirebaseDatabase.getInstance().getReference("Chatlist")
-                            .child(sender)
-                            .child(receiver);
-                    final DatabaseReference chatRefReceiver = FirebaseDatabase.getInstance().getReference("Chatlist")
-                            .child(receiver)
-                            .child(sender);
-
-                    chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if (!dataSnapshot.exists()) {
-                                chatRef.child("id").setValue(receiver);
-                                chatRef.child("time").setValue(time);
+                        friendsRefReceiver.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (!dataSnapshot.exists()) {
+                                    friendsRefReceiver.child("id").setValue(sender);
+                                }
+                                return;
                             }
-                            else {
-                                chatRef.child("time").setValue(time);
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
                             }
-                        }
+                        });
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                        final DatabaseReference chatRef = FirebaseDatabase.getInstance().getReference("Chatlist")
+                                .child(sender)
+                                .child(receiver);
+                        final DatabaseReference chatRefReceiver = FirebaseDatabase.getInstance().getReference("Chatlist")
+                                .child(receiver)
+                                .child(sender);
 
-                        }
-                    });
-
-                    chatRefReceiver.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if (!dataSnapshot.exists()) {
-                                chatRefReceiver.child("id").setValue(sender);
-                                chatRefReceiver.child("time").setValue(time);
+                        chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (!dataSnapshot.exists()) {
+                                    chatRef.child("id").setValue(receiver);
+                                    chatRef.child("time").setValue(time);
+                                } else {
+                                    chatRef.child("time").setValue(time);
+                                }
                             }
-                            else {
-                                chatRefReceiver.child("time").setValue(time);
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
                             }
-                        }
+                        });
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
-
-                    reference = FirebaseDatabase.getInstance().getReference("Users").child(sender);
-                    reference.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            User user = dataSnapshot.getValue(User.class);
-                            if (notify) {
-                                sendNotifications(receiver, user.getUsername(), "sent a voice message.");
+                        chatRefReceiver.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (!dataSnapshot.exists()) {
+                                    chatRefReceiver.child("id").setValue(sender);
+                                    chatRefReceiver.child("time").setValue(time);
+                                } else {
+                                    chatRefReceiver.child("time").setValue(time);
+                                }
                             }
-                            notify = false;
-                        }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                        }
-                    });
+                            }
+                        });
+
+                        reference = FirebaseDatabase.getInstance().getReference("Users").child(sender);
+                        reference.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                User user = dataSnapshot.getValue(User.class);
+                                if (notify) {
+                                    sendNotifications(receiver, user.getUsername(), "sent a voice message.");
+                                }
+                                notify = false;
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
                 }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(MessageActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                pd.dismiss();
-            }
-        });
-
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(MessageActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    pd.dismiss();
+                }
+            });
+        }
+        else {
+            Toast.makeText(this, "You've exceeded the allowed voice message duration, 5min.", Toast.LENGTH_SHORT).show();
+        }
     }
 }

@@ -8,16 +8,17 @@ public class Chat {
     private boolean isseen;
     private String deletedfrom;
     private String type;
+    private int length;
     private long time;
 
-
-    public Chat(String sender, String receiver, String message, boolean isseen, String deletedfrom, String type, long time) {
+    public Chat(String sender, String receiver, String message, boolean isseen, String deletedfrom, String type, int length, long time) {
         this.sender = sender;
         this.receiver = receiver;
         this.message = message;
         this.isseen = isseen;
         this.deletedfrom = deletedfrom;
         this.type = type;
+        this.length = length;
         this.time = time;
     }
 
@@ -78,5 +79,13 @@ public class Chat {
 
     public void setDeletedfrom(String deletedfrom) {
         this.deletedfrom = deletedfrom;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
     }
 }
