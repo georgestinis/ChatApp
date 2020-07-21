@@ -1,10 +1,12 @@
 package com.example.chatapp.Adapter;
 
 import android.content.Context;
+import android.media.MediaPlayer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -22,12 +24,18 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 
 public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapter.MyViewHolder> {
 
     public static final int MSG_TYPE_LEFT = 0;
     public static final int MSG_TYPE_RIGHT = 1;
+
+    private MediaPlayer mediaPlayer;
+    private Timer timer;
 
     private Context mContext;
     private List<GroupChat> mGroupChat;
@@ -44,14 +52,18 @@ public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapte
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // Get the view type and create the right view
+        View view;
         if (viewType == MSG_TYPE_RIGHT) {
-            View view = LayoutInflater.from(mContext).inflate(R.layout.group_chat_item_right, parent, false);
-            return new MyViewHolder(view);
+            view = LayoutInflater.from(mContext).inflate(R.layout.group_chat_item_right, parent, false);
         }
         else {
-            View view = LayoutInflater.from(mContext).inflate(R.layout.group_chat_item_left, parent, false);
-            return new MyViewHolder(view);
+            view = LayoutInflater.from(mContext).inflate(R.layout.group_chat_item_left, parent, false);
         }
+        return new MyViewHolder(view);
+    }
+
+    public MediaPlayer getMediaPlayer() {
+        return mediaPlayer;
     }
 
     @Override
@@ -59,11 +71,13 @@ public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapte
         GroupChat groupChat = mGroupChat.get(position);
 
         if (groupChat.getType().equals("text")) {
+            holder.audio_message.setVisibility(View.GONE);
             holder.image_message.setVisibility(View.GONE);
             holder.show_message.setVisibility(View.VISIBLE);
             holder.show_message.setText(groupChat.getMessage());
         }
         else if (groupChat.getType().equals("image")){
+            holder.audio_message.setVisibility(View.GONE);
             holder.image_message.setVisibility(View.VISIBLE);
             holder.show_message.setVisibility(View.GONE);
             if ("default".equals(groupChat.getMessage())) {
@@ -73,6 +87,38 @@ public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapte
                 Glide.with(mContext).load(groupChat.getMessage()).into(holder.image_message);
             }
         }
+        else if (groupChat.getType().equals("audio")) {
+            holder.image_message.setVisibility(View.GONE);
+            holder.show_message.setVisibility(View.GONE);
+            holder.audio_message.setVisibility(View.VISIBLE);
+            holder.time_audio.setText(String.format("%2d:%02d",
+                    TimeUnit.MILLISECONDS.toMinutes(groupChat.getLength()),
+                    TimeUnit.MILLISECONDS.toSeconds(groupChat.getLength()) -
+                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(groupChat.getLength()))
+            ));
+        }
+
+        holder.audio_message.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                    mediaPlayer.stop();
+                }
+                mediaPlayer = new MediaPlayer();
+                try {
+                    mediaPlayer.setDataSource(groupChat.getMessage());
+                    mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                        @Override
+                        public void onPrepared(MediaPlayer mp) {
+                            mp.start();
+                        }
+                    });
+                    mediaPlayer.prepare();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
         setUserName(groupChat ,holder);
     }
@@ -108,9 +154,10 @@ public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapte
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
         private ImageView profile_image;
-        private TextView name;
-        private TextView show_message;
+        private TextView name, show_message, time_audio;
         private ImageView image_message;
+        private RelativeLayout audio_message;
+
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -118,6 +165,9 @@ public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapte
             profile_image = itemView.findViewById(R.id.profile_image);
             name = itemView.findViewById(R.id.name);
             image_message = itemView.findViewById(R.id.image_message);
+            audio_message = itemView.findViewById(R.id.audio_message);
+            time_audio = itemView.findViewById(R.id.time_audio);
+
         }
     }
 

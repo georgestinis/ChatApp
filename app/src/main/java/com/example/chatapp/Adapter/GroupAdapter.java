@@ -95,11 +95,23 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.MyViewHolder
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                     User user = dataSnapshot.getValue(User.class);
-                                    if (type.equals("image")) {
-                                        holder.last_msg.setText(user.getUsername() + ": sent a photo.");
+                                    if (user.getId().equals(sender)) {
+                                        if (type.equals("image")) {
+                                            holder.last_msg.setText("You sent a photo.");
+                                        } else if (type.equals("text")) {
+                                            holder.last_msg.setText("You: " + msg);
+                                        } else {
+                                            holder.last_msg.setText("You sent a voice message");
+                                        }
                                     }
                                     else {
-                                        holder.last_msg.setText(user.getUsername() + ": " + msg);
+                                        if (type.equals("image")) {
+                                            holder.last_msg.setText(user.getUsername() + ": sent a photo.");
+                                        } else if (type.equals("text")) {
+                                            holder.last_msg.setText(user.getUsername() + ": " + msg);
+                                        } else {
+                                            holder.last_msg.setText(user.getUsername() + ": sent a voice message");
+                                        }
                                     }
                                 }
 

@@ -162,8 +162,11 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder>{
                                 if (chat.getType().equals("image")) {
                                     theLastMessage = "Sent a photo.";
                                 }
-                                else {
+                                else if (chat.getType().equals("text")){
                                     theLastMessage = chat.getMessage();
+                                }
+                                else {
+                                    theLastMessage = "Sent a voice message";
                                 }
                                 seen_msg = chat.isIsseen();
                             }
@@ -171,8 +174,11 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MyViewHolder>{
                                 if (chat.getType().equals("image")) {
                                     theLastMessage = "You sent a photo.";
                                 }
-                                else {
+                                else if (chat.getType().equals("text")){
                                     theLastMessage = "You: " + chat.getMessage();
+                                }
+                                else {
+                                    theLastMessage = "You sent a voice message";
                                 }
                             }
                             // Convert timestamp

@@ -52,14 +52,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // Get the view type and create the right view
+        View view;
         if (viewType == MSG_TYPE_RIGHT) {
-            View view = LayoutInflater.from(mContext).inflate(R.layout.chat_item_right, parent, false);
-            return new MyViewHolder(view);
+            view = LayoutInflater.from(mContext).inflate(R.layout.chat_item_right, parent, false);
         }
         else {
-            View view = LayoutInflater.from(mContext).inflate(R.layout.chat_item_left, parent, false);
-            return new MyViewHolder(view);
+            view = LayoutInflater.from(mContext).inflate(R.layout.chat_item_left, parent, false);
         }
+        return new MyViewHolder(view);
     }
 
     public MediaPlayer getMediaPlayer() {
@@ -70,8 +70,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Chat chat = mChat.get(position);
-
-        holder.show_message.setText(chat.getMessage());
 
         if (imageurl.equals("default")) {
             holder.profile_image.setImageResource(R.mipmap.ic_launcher);
@@ -170,11 +168,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
 //        private int counter = 0;
-        private TextView show_message, txt_seen;
+        private TextView show_message, txt_seen, time_audio;
         private ImageView profile_image, image_message, play_audio;
         private RelativeLayout audio_message;
         private ProgressBar audio_length;
-        private TextView time_audio;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);

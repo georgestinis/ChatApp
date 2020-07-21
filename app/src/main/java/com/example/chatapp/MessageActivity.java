@@ -131,7 +131,8 @@ public class MessageActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (messageAdapter != null && messageAdapter.getMediaPlayer().isPlaying()) {
+                if (messageAdapter != null && messageAdapter.getMediaPlayer() != null &&
+                        messageAdapter.getMediaPlayer().isPlaying()) {
                     messageAdapter.getMediaPlayer().stop();
                 }
                 startActivity(new Intent(MessageActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
@@ -178,6 +179,7 @@ public class MessageActivity extends AppCompatActivity {
         // Get the logged in user
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
+        // If text is empty change drawable to mic
         text_send.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -200,6 +202,7 @@ public class MessageActivity extends AppCompatActivity {
             }
         });
 
+        // When you hold btn_send start recording, when you let it stop recording
         btn_send.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -310,7 +313,7 @@ public class MessageActivity extends AppCompatActivity {
 
     // Create a new reference, add everything to a hash map and push it to Chats
     private void sendMessage(String sender, final String receiver, String message) {
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        reference = FirebaseDatabase.getInstance().getReference();
         long time = System.currentTimeMillis();
 
         HashMap<String, Object> hashMap = new HashMap<>();
@@ -815,7 +818,8 @@ public class MessageActivity extends AppCompatActivity {
         return result && result1;
     }
 
-    // Recording audio
+    /************** For audio sending **************/
+
     private void requestMicrophonePermission() {
         ActivityCompat.requestPermissions(this, microphonePermission, MICROPHONE_REQUEST_CODE);
     }

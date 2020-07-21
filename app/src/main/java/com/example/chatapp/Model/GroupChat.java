@@ -5,12 +5,14 @@ public class GroupChat {
     private String message;
     private long time;
     private String type;
+    private int length;
 
-    public GroupChat(String sender, String message, long time, String type) {
+    public GroupChat(String sender, String message, long time, String type, int length) {
         this.sender = sender;
         this.message = message;
         this.time = time;
         this.type = type;
+        this.length = length;
     }
 
     public GroupChat() {
@@ -47,4 +49,13 @@ public class GroupChat {
     public void setType(String type) {
         this.type = type;
     }
+
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
+    }
+
 }

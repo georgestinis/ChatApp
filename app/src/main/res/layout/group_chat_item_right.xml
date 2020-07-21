@@ -51,6 +51,38 @@
             android:layout_below="@+id/show_message"
             android:src="@drawable/ic_image_black"/>
 
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/image_message"
+            android:padding="2dp"
+            android:id="@+id/audio_message">
+
+            <ImageView
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:id="@+id/play_audio"
+                android:src="@drawable/ic_play_white"/>
+            <ProgressBar
+                android:id="@+id/audio_length"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_toRightOf="@+id/play_audio"
+                android:layout_marginLeft="5dp"
+                android:layout_width="150dp"
+                android:layout_height="25dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="25dp"
+                android:id="@+id/time_audio"
+                android:text="05:00"
+                android:layout_marginLeft="5dp"
+                android:gravity="center_vertical"
+                android:layout_toRightOf="@id/audio_length"
+                android:textColor="@color/white"/>
+
+        </RelativeLayout>
+
     </RelativeLayout>
 
 </RelativeLayout>

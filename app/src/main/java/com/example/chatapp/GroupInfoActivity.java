@@ -304,7 +304,7 @@ public class GroupInfoActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String name = (String) dataSnapshot.child("username").getValue();
-                createdBy.setText("Created by " + name + " on" + dateTime);
+                createdBy.setText("Created by " + name + " on " + dateTime);
             }
 
             @Override
