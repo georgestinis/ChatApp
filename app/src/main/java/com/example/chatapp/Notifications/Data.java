@@ -6,16 +6,26 @@ public class Data {
     private String body;
     private String title;
     private String sented;
+    private long time;
 
-    public Data(String user, int icon, String body, String title, String sented) {
+    public Data(String user, int icon, String body, String title, String sented, long time) {
         this.user = user;
         this.icon = icon;
         this.body = body;
         this.title = title;
         this.sented = sented;
+        this.time = time;
     }
 
     public Data() {
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 
     public String getUser() {

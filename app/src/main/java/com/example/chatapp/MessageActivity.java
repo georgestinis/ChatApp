@@ -326,7 +326,7 @@ public class MessageActivity extends AppCompatActivity {
         hashMap.put("time", time);
         hashMap.put("deletedfrom", "none");
 
-        reference.child("Chats").push().setValue(hashMap);
+        reference.child("Chats").child(time+"").setValue(hashMap);
 
         final DatabaseReference friendsRef = FirebaseDatabase.getInstance().getReference("Friends")
                 .child(sender)
@@ -416,7 +416,7 @@ public class MessageActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 User user = dataSnapshot.getValue(User.class);
                 if (notify) {
-                    sendNotifications(receiver, user.getUsername(), msg);
+                    sendNotifications(receiver, user.getUsername(), msg, time);
                 }
                 notify = false;
             }
@@ -428,7 +428,7 @@ public class MessageActivity extends AppCompatActivity {
         });
     }
 
-    private void sendNotifications(String receiver, final String username, final String msg) {
+    private void sendNotifications(String receiver, final String username, final String msg, long time) {
         DatabaseReference tokens = FirebaseDatabase.getInstance().getReference("Tokens");
         Query query = tokens.orderByKey().equalTo(receiver);
         query.addValueEventListener(new ValueEventListener() {
@@ -436,7 +436,7 @@ public class MessageActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Token token = snapshot.getValue(Token.class);
-                    Data data = new Data(firebaseUser.getUid(), R.mipmap.ic_launcher, username + ": " + msg, "New Message", userid);
+                    Data data = new Data(firebaseUser.getUid(), R.mipmap.ic_launcher, username + ": " + msg, "New Message", userid, time);
 
                     Sender sender = new Sender(data, token.getToken());
 
@@ -574,7 +574,7 @@ public class MessageActivity extends AppCompatActivity {
                     hashMap.put("length", 0);
                     hashMap.put("deletedfrom", "none");
 
-                    reference.child("Chats").push().setValue(hashMap)
+                    reference.child("Chats").child(time+"").setValue(hashMap)
                             .addOnSuccessListener(e -> {
                                 pd.dismiss();
                             })
@@ -669,7 +669,7 @@ public class MessageActivity extends AppCompatActivity {
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             User user = dataSnapshot.getValue(User.class);
                             if (notify) {
-                                sendNotifications(receiver, user.getUsername(), "sent a photo.");
+                                sendNotifications(receiver, user.getUsername(), "sent a photo.", time);
                             }
                             notify = false;
                         }
@@ -904,7 +904,7 @@ public class MessageActivity extends AppCompatActivity {
                         hashMap.put("type", "audio");
                         hashMap.put("length", duration);
                         hashMap.put("deletedfrom", "none");
-                        reference.child("Chats").push().setValue(hashMap)
+                        reference.child("Chats").child(time+"").setValue(hashMap)
                                 .addOnSuccessListener(e -> {
                                     pd.dismiss();
                                 })
@@ -997,7 +997,7 @@ public class MessageActivity extends AppCompatActivity {
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 User user = dataSnapshot.getValue(User.class);
                                 if (notify) {
-                                    sendNotifications(receiver, user.getUsername(), "sent a voice message.");
+                                    sendNotifications(receiver, user.getUsername(), "sent a voice message.", time);
                                 }
                                 notify = false;
                             }

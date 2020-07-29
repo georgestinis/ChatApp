@@ -15,12 +15,14 @@ import androidx.core.app.NotificationCompat;
 
 import com.example.chatapp.GroupMessageActivity;
 import com.example.chatapp.MessageActivity;
+import com.example.chatapp.Model.Chat;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -68,6 +70,7 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
         String icon = remoteMessage.getData().get("icon");
         String title = remoteMessage.getData().get("title");
         String body = remoteMessage.getData().get("body");
+        String time = remoteMessage.getData().get("time");
 
         RemoteMessage.Notification notification = remoteMessage.getNotification();
         int j;
@@ -112,7 +115,7 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
         Uri defaultSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
         OreoNupNotifications oreoNupNotifications = new OreoNupNotifications(this);
-        Notification.Builder builder = oreoNupNotifications.getOreoNupNotification(title, body, pendingIntent, defaultSound, icon);
+        Notification.Builder builder = oreoNupNotifications.getOreoNupNotification(title, body, pendingIntent, defaultSound, icon, time);
 
         int i = 0;
 
@@ -121,6 +124,23 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
         }
 
         oreoNupNotifications.getManager().notify(i, builder.build());
+
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Chats").child(time);
+        int finalI = i;
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Chat chat = dataSnapshot.getValue(Chat.class);
+                if (chat != null && chat.isIsseen()) {
+                    oreoNupNotifications.getManager().cancel(finalI);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void sendNotification(RemoteMessage remoteMessage) {
@@ -128,6 +148,7 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
         String icon = remoteMessage.getData().get("icon");
         String title = remoteMessage.getData().get("title");
         String body = remoteMessage.getData().get("body");
+        String time = remoteMessage.getData().get("time");
 
         RemoteMessage.Notification notification = remoteMessage.getNotification();
         int j;
@@ -183,5 +204,23 @@ public class MyFirebaseMessaging extends FirebaseMessagingService {
         }
 
         noti.notify(i, builder.build());
+
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Chats").child(time);
+        int finalI = i;
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Chat chat = dataSnapshot.getValue(Chat.class);
+                if (chat != null && chat.isIsseen()) {
+                    noti.cancel(finalI);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 }

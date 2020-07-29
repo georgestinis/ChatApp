@@ -42,7 +42,7 @@ public class OreoNupNotifications extends ContextWrapper {
     }
 
     @TargetApi(Build.VERSION_CODES.O)
-    public Notification.Builder getOreoNupNotification(String title, String body, PendingIntent pendingIntent, Uri soundUri, String icon) {
+    public Notification.Builder getOreoNupNotification(String title, String body, PendingIntent pendingIntent, Uri soundUri, String icon, String time) {
         return new Notification.Builder(getApplicationContext(), CHANNEL_ID).setContentIntent(pendingIntent).setContentTitle(title).setContentText(body)
                 .setSmallIcon(Integer.parseInt(icon)).setSound(soundUri).setAutoCancel(true);
     }

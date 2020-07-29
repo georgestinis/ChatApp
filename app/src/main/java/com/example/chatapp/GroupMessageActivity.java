@@ -305,7 +305,7 @@ public class GroupMessageActivity extends AppCompatActivity {
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                 Participant participant = snapshot.getValue(Participant.class);
                                 if (!participant.getUid().equals(firebaseUser.getUid())) {
-                                    sendNotifications(participant.getUid(), user.getUsername(), message);
+                                    sendNotifications(participant.getUid(), user.getUsername(), message, time);
                                 }
                             }
                             notify = false;
@@ -376,7 +376,7 @@ public class GroupMessageActivity extends AppCompatActivity {
         });
     }
 
-    private void sendNotifications(String receiver, final String username, final String msg) {
+    private void sendNotifications(String receiver, final String username, final String msg, long time) {
         DatabaseReference tokens = FirebaseDatabase.getInstance().getReference("Tokens");
         Query query = tokens.orderByKey().equalTo(receiver);
         query.addValueEventListener(new ValueEventListener() {
@@ -384,7 +384,7 @@ public class GroupMessageActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Token token = snapshot.getValue(Token.class);
-                    Data data = new Data(firebaseUser.getUid(), R.mipmap.ic_launcher, username + ": " + msg, "New Group Message - " + group_title.getText(), receiver);
+                    Data data = new Data(firebaseUser.getUid(), R.mipmap.ic_launcher, username + ": " + msg, "New Group Message - " + group_title.getText(), receiver, time);
 
                     Sender sender = new Sender(data, token.getToken());
 
@@ -509,7 +509,7 @@ public class GroupMessageActivity extends AppCompatActivity {
                                         for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                             Participant participant = snapshot.getValue(Participant.class);
                                             if (!participant.getUid().equals(firebaseUser.getUid())) {
-                                                sendNotifications(participant.getUid(), user.getUsername(), "sent a photo.");
+                                                sendNotifications(participant.getUid(), user.getUsername(), "sent a photo.", time);
                                             }
                                         }
                                         notify = false;
@@ -774,7 +774,7 @@ public class GroupMessageActivity extends AppCompatActivity {
                                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                                 Participant participant = snapshot.getValue(Participant.class);
                                                 if (!participant.getUid().equals(firebaseUser.getUid())) {
-                                                    sendNotifications(participant.getUid(), user.getUsername(), "sent a voice message.");
+                                                    sendNotifications(participant.getUid(), user.getUsername(), "sent a voice message.", time);
                                                 }
                                             }
                                             notify = false;
