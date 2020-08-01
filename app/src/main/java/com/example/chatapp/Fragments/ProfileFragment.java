@@ -28,17 +28,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.example.chatapp.GroupInfoActivity;
-import com.example.chatapp.MainActivity;
+import com.example.chatapp.ChangePasswordActivity;
+import com.example.chatapp.DeleteProfileActivity;
 import com.example.chatapp.Model.User;
 import com.example.chatapp.R;
 import com.example.chatapp.StartActivity;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -61,7 +59,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class ProfileFragment extends Fragment {
 
     private CircleImageView image_profile;
-    private TextView username, edit_profile, delete_profile;
+    private TextView username, change_password, delete_profile;
 
     private DatabaseReference reference;
     private FirebaseUser firebaseUser;
@@ -94,7 +92,7 @@ public class ProfileFragment extends Fragment {
         image_profile = view.findViewById(R.id.profile_image);
         username = view.findViewById(R.id.username);
 
-        edit_profile = view.findViewById(R.id.edit_profile);
+        change_password = view.findViewById(R.id.change_password);
         delete_profile = view.findViewById(R.id.delete_profile);
 
         cameraPermission = new String[]{
@@ -136,48 +134,11 @@ public class ProfileFragment extends Fragment {
         // When you click the image call openImage method
         image_profile.setOnClickListener(v -> showImageImportDialog());
 
-        delete_profile.setOnClickListener(v -> {
-            String dialogTitle;
-            String dialogDescription;
-            String positiveButtonTitle;
+        delete_profile.setOnClickListener(v -> startActivity(new Intent(getContext(), DeleteProfileActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)));
 
-            dialogTitle = "Delete Profile";
-            dialogDescription = "Are you sure you want to Delete your profile permanently?";
-            positiveButtonTitle = "DELETE";
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-            builder.setTitle(dialogTitle).setMessage(dialogDescription).setPositiveButton(positiveButtonTitle, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    deleteProfile();
-                }
-            }).setNeutralButton("CANCEL", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-
-                }
-            }).show();
-        });
+        change_password.setOnClickListener(v -> startActivity(new Intent(getContext(), ChangePasswordActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)));
 
         return view;
-    }
-
-    private void deleteProfile() {
-        String currentUserUid = firebaseUser.getUid();
-        firebaseUser.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    reference = FirebaseDatabase.getInstance().getReference("Users");
-                    reference.child(currentUserUid).removeValue();
-                    Toast.makeText(getContext(), "You have successfully deleted your profile", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(getContext(), StartActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
-                }
-                else {
-                    Toast.makeText(getContext(), "User account deletion unsuccessful", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
     }
 
     private void showImageImportDialog() {

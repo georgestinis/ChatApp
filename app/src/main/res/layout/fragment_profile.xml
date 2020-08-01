@@ -31,17 +31,24 @@
                 android:src="@mipmap/ic_launcher"/>
 
             <TextView
+                android:id="@+id/username"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Username"
                 android:layout_below="@id/profile_image"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="15dp"
-                android:textColor="@color/toolbarDark"
-                android:textStyle="bold"
-                android:textSize="18sp"
                 android:layout_marginBottom="20dp"
-                android:id="@+id/username"/>
+                android:drawableStart="@drawable/ic_edit_white"
+                android:drawablePadding="10dp"
+                android:drawableTint="@color/black"
+                android:paddingLeft="8dp"
+                android:paddingTop="8dp"
+                android:paddingRight="26dp"
+                android:paddingBottom="8dp"
+                android:text="Username"
+                android:textColor="@color/toolbarDark"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
         </RelativeLayout>
 
@@ -70,8 +77,8 @@
             android:drawablePadding="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Edit Profile"
-            android:id="@+id/edit_profile"
+            android:text="Change Password"
+            android:id="@+id/change_password"
             android:padding="8dp"
             android:textColor="@color/black"/>
 

@@ -130,12 +130,17 @@ public class GroupMessageAdapter extends RecyclerView.Adapter<GroupMessageAdapte
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 User user = dataSnapshot.getValue(User.class);
-                holder.name.setText(user.getUsername());
-                if (user.getImageURL().equals("default")) {
-                    holder.profile_image.setImageResource(R.mipmap.ic_launcher);
+                if (user != null) {
+                    holder.name.setText(user.getUsername());
+                    if (user.getImageURL().equals("default")) {
+                        holder.profile_image.setImageResource(R.mipmap.ic_launcher);
+                    } else {
+                        Glide.with(mContext).load(user.getImageURL()).into(holder.profile_image);
+                    }
                 }
                 else {
-                    Glide.with(mContext).load(user.getImageURL()).into(holder.profile_image);
+                    holder.name.setText("User");
+                    holder.profile_image.setImageResource(R.mipmap.ic_launcher);
                 }
             }
 
