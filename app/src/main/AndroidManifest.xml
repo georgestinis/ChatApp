@@ -15,7 +15,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ChatApp">
-        <activity android:name=".DeleteProfileActivity"></activity>
+        <activity android:name=".UpdateProfileNameActivity"></activity>
+        <activity android:name=".DeleteProfileActivity" />
         <activity android:name=".ChangePasswordActivity" />
         <activity android:name=".GroupEditActivity" />
         <activity android:name=".GroupInfoActivity" />

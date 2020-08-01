@@ -33,6 +33,7 @@ import com.example.chatapp.DeleteProfileActivity;
 import com.example.chatapp.Model.User;
 import com.example.chatapp.R;
 import com.example.chatapp.StartActivity;
+import com.example.chatapp.UpdateProfileNameActivity;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -137,6 +138,8 @@ public class ProfileFragment extends Fragment {
         delete_profile.setOnClickListener(v -> startActivity(new Intent(getContext(), DeleteProfileActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)));
 
         change_password.setOnClickListener(v -> startActivity(new Intent(getContext(), ChangePasswordActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)));
+
+        username.setOnClickListener(v -> startActivity(new Intent(getContext(), UpdateProfileNameActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)));
 
         return view;
     }

@@ -62,45 +62,46 @@ public class DeleteProfileActivity extends AppCompatActivity {
             }
             else {
                 final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                AuthCredential credential = EmailAuthProvider.getCredential(email.getText().toString(), password.getText().toString());
+                if (firebaseUser != null) {
+                    AuthCredential credential = EmailAuthProvider.getCredential(email.getText().toString(), password.getText().toString());
 
-                firebaseUser.reauthenticate(credential).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            String dialogTitle;
-                            String dialogDescription;
-                            String positiveButtonTitle;
+                    firebaseUser.reauthenticate(credential).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                String dialogTitle;
+                                String dialogDescription;
+                                String positiveButtonTitle;
 
-                            dialogTitle = "Delete Profile";
-                            dialogDescription = "Are you sure you want to Delete your profile permanently?";
-                            positiveButtonTitle = "DELETE";
+                                dialogTitle = "Delete Profile";
+                                dialogDescription = "Are you sure you want to Delete your profile permanently?";
+                                positiveButtonTitle = "DELETE";
 
-                            AlertDialog.Builder builder = new AlertDialog.Builder(DeleteProfileActivity.this);
-                            builder.setTitle(dialogTitle).setMessage(dialogDescription).setPositiveButton(positiveButtonTitle, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    String currentUserUid = firebaseUser.getUid();
-                                    deleteChats(currentUserUid);
-                                    deleteGroups(currentUserUid);
-                                    deleteChatlist(currentUserUid);
-                                    deleteFriend(currentUserUid);
-                                    deleteToken(currentUserUid);
-                                    deleteUser(firebaseUser, currentUserUid);
-                                }
-                            }).setNeutralButton("CANCEL", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(DeleteProfileActivity.this);
+                                builder.setTitle(dialogTitle).setMessage(dialogDescription).setPositiveButton(positiveButtonTitle, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        String currentUserUid = firebaseUser.getUid();
+                                        deleteChats(currentUserUid);
+                                        deleteGroups(currentUserUid);
+                                        deleteChatlist(currentUserUid);
+                                        deleteFriend(currentUserUid);
+                                        deleteToken(currentUserUid);
+                                        deleteUser(firebaseUser, currentUserUid);
+                                    }
+                                }).setNeutralButton("CANCEL", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
 
-                                }
-                            }).show();
+                                    }
+                                }).show();
 
-                        } else {
-                            Toast.makeText(DeleteProfileActivity.this, "Error authentication failed", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(DeleteProfileActivity.this, "Error authentication failed", Toast.LENGTH_SHORT).show();
+                            }
                         }
-                    }
-                });
-
+                    });
+                }
 
             }
         });

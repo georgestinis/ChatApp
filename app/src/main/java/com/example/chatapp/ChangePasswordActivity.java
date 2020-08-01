@@ -51,28 +51,30 @@ public class ChangePasswordActivity extends AppCompatActivity {
             }
             else {
                 final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-                AuthCredential credential = EmailAuthProvider.getCredential(email.getText().toString(), oldPassword.getText().toString());
+                if (firebaseUser != null) {
+                    AuthCredential credential = EmailAuthProvider.getCredential(email.getText().toString(), oldPassword.getText().toString());
 
-                firebaseUser.reauthenticate(credential).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            firebaseUser.updatePassword(newPassword.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()) {
-                                        Toast.makeText(ChangePasswordActivity.this, "Password updated", Toast.LENGTH_SHORT).show();
-                                        startActivity(new Intent(ChangePasswordActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
-                                    } else {
-                                        Toast.makeText(ChangePasswordActivity.this, "Error password has not been updated", Toast.LENGTH_SHORT).show();
+                    firebaseUser.reauthenticate(credential).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                firebaseUser.updatePassword(newPassword.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful()) {
+                                            Toast.makeText(ChangePasswordActivity.this, "Password updated", Toast.LENGTH_SHORT).show();
+                                            startActivity(new Intent(ChangePasswordActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                                        } else {
+                                            Toast.makeText(ChangePasswordActivity.this, "Error password has not been updated", Toast.LENGTH_SHORT).show();
+                                        }
                                     }
-                                }
-                            });
-                        } else {
-                            Toast.makeText(ChangePasswordActivity.this, "Error authentication failed", Toast.LENGTH_SHORT).show();
+                                });
+                            } else {
+                                Toast.makeText(ChangePasswordActivity.this, "Error authentication failed", Toast.LENGTH_SHORT).show();
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         });
     }
