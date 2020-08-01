@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -27,12 +28,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.chatapp.GroupInfoActivity;
+import com.example.chatapp.MainActivity;
 import com.example.chatapp.Model.User;
 import com.example.chatapp.R;
+import com.example.chatapp.StartActivity;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -55,7 +61,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class ProfileFragment extends Fragment {
 
     private CircleImageView image_profile;
-    private TextView username;
+    private TextView username, edit_profile, delete_profile;
 
     private DatabaseReference reference;
     private FirebaseUser firebaseUser;
@@ -88,6 +94,9 @@ public class ProfileFragment extends Fragment {
         image_profile = view.findViewById(R.id.profile_image);
         username = view.findViewById(R.id.username);
 
+        edit_profile = view.findViewById(R.id.edit_profile);
+        delete_profile = view.findViewById(R.id.delete_profile);
+
         cameraPermission = new String[]{
                 Manifest.permission.CAMERA,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -105,14 +114,15 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 User user = dataSnapshot.getValue(User.class);
-                username.setText(user.getUsername());
-                if ("default".equals(user.getImageURL())) {
-                    image_profile.setImageResource(R.mipmap.ic_launcher);
-                }
-                else {
-                    // If the fragment is added to its activity and user has a image profile load it
-                    if (isAdded()) {
-                        Glide.with(getContext()).load(user.getImageURL()).into(image_profile);
+                if (user != null) {
+                    username.setText(user.getUsername());
+                    if ("default".equals(user.getImageURL())) {
+                        image_profile.setImageResource(R.mipmap.ic_launcher);
+                    } else {
+                        // If the fragment is added to its activity and user has a image profile load it
+                        if (isAdded()) {
+                            Glide.with(getContext()).load(user.getImageURL()).into(image_profile);
+                        }
                     }
                 }
             }
@@ -126,7 +136,48 @@ public class ProfileFragment extends Fragment {
         // When you click the image call openImage method
         image_profile.setOnClickListener(v -> showImageImportDialog());
 
+        delete_profile.setOnClickListener(v -> {
+            String dialogTitle;
+            String dialogDescription;
+            String positiveButtonTitle;
+
+            dialogTitle = "Delete Profile";
+            dialogDescription = "Are you sure you want to Delete your profile permanently?";
+            positiveButtonTitle = "DELETE";
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setTitle(dialogTitle).setMessage(dialogDescription).setPositiveButton(positiveButtonTitle, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    deleteProfile();
+                }
+            }).setNeutralButton("CANCEL", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            }).show();
+        });
+
         return view;
+    }
+
+    private void deleteProfile() {
+        String currentUserUid = firebaseUser.getUid();
+        firebaseUser.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    reference = FirebaseDatabase.getInstance().getReference("Users");
+                    reference.child(currentUserUid).removeValue();
+                    Toast.makeText(getContext(), "You have successfully deleted your profile", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(getContext(), StartActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                }
+                else {
+                    Toast.makeText(getContext(), "User account deletion unsuccessful", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void showImageImportDialog() {
@@ -213,7 +264,7 @@ public class ProfileFragment extends Fragment {
         // If imageUri has been initialized
         if (imageUri != null) {
             // Set storage reference
-            storageReference = FirebaseStorage.getInstance().getReference("ProfileImages");
+            storageReference = FirebaseStorage.getInstance().getReference("ProfileImages").child(System.currentTimeMillis()+ "." + getFileExtension(imageUri));;
 
             // Compress the image
             Bitmap bmp = MediaStore.Images.Media.getBitmap(Objects.requireNonNull(getContext()).getContentResolver(), imageUri);

@@ -263,15 +263,16 @@ public class MessageActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 // Get the user you selected
                 User user = dataSnapshot.getValue(User.class);
-                username.setText(user.getUsername());
-                if ("default".equals(user.getImageURL())) {
-                    profile_image.setImageResource(R.mipmap.ic_launcher);
+                if (user != null) {
+                    username.setText(user.getUsername());
+                    if ("default".equals(user.getImageURL())) {
+                        profile_image.setImageResource(R.mipmap.ic_launcher);
+                    } else {
+                        Glide.with(getApplicationContext()).load(user.getImageURL()).into(profile_image);
+                    }
+                    // Call read messages method
+                    readMessages(firebaseUser.getUid(), userid, user.getImageURL());
                 }
-                else {
-                    Glide.with(getApplicationContext()).load(user.getImageURL()).into(profile_image);
-                }
-                // Call read messages method
-                readMessages(firebaseUser.getUid(), userid, user.getImageURL());
             }
 
             @Override
@@ -415,10 +416,12 @@ public class MessageActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 User user = dataSnapshot.getValue(User.class);
-                if (notify) {
-                    sendNotifications(receiver, user.getUsername(), msg, time);
+                if (user != null) {
+                    if (notify) {
+                        sendNotifications(receiver, user.getUsername(), msg, time);
+                    }
+                    notify = false;
                 }
-                notify = false;
             }
 
             @Override
@@ -504,12 +507,15 @@ public class MessageActivity extends AppCompatActivity {
     }
 
     private void status(String status) {
-        reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
 
-        HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("status", status);
+            HashMap<String, Object> hashMap = new HashMap<>();
+            hashMap.put("status", status);
 
-        reference.updateChildren(hashMap);
+            reference.updateChildren(hashMap);
+        }
     }
 
     @Override
@@ -668,10 +674,12 @@ public class MessageActivity extends AppCompatActivity {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             User user = dataSnapshot.getValue(User.class);
-                            if (notify) {
-                                sendNotifications(receiver, user.getUsername(), "sent a photo.", time);
+                            if (user != null) {
+                                if (notify) {
+                                    sendNotifications(receiver, user.getUsername(), "sent a photo.", time);
+                                }
+                                notify = false;
                             }
-                            notify = false;
                         }
 
                         @Override
@@ -996,10 +1004,12 @@ public class MessageActivity extends AppCompatActivity {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 User user = dataSnapshot.getValue(User.class);
-                                if (notify) {
-                                    sendNotifications(receiver, user.getUsername(), "sent a voice message.", time);
+                                if (user != null) {
+                                    if (notify) {
+                                        sendNotifications(receiver, user.getUsername(), "sent a voice message.", time);
+                                    }
+                                    notify = false;
                                 }
-                                notify = false;
                             }
 
                             @Override

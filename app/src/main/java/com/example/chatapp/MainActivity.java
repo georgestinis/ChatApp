@@ -65,11 +65,13 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     User user = dataSnapshot.getValue(User.class);
-                    username.setText(user.getUsername());
-                    if (user.getImageURL().equals("default")) {
-                        profile_image.setImageResource(R.mipmap.ic_launcher);
-                    } else {
-                        Glide.with(getApplicationContext()).load(user.getImageURL()).into(profile_image);
+                    if (user != null) {
+                        username.setText(user.getUsername());
+                        if (user.getImageURL().equals("default")) {
+                            profile_image.setImageResource(R.mipmap.ic_launcher);
+                        } else {
+                            Glide.with(getApplicationContext()).load(user.getImageURL()).into(profile_image);
+                        }
                     }
                 }
 
@@ -179,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void status(String status) {
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser != null) {
             reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
 

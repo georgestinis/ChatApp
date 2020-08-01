@@ -297,25 +297,27 @@ public class GroupMessageActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 User user = dataSnapshot.getValue(User.class);
-                if (notify) {
-                    DatabaseReference reference1 = FirebaseDatabase.getInstance().getReference("Groups");
-                    reference1.child(groupId).child("Participants").addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                Participant participant = snapshot.getValue(Participant.class);
-                                if (!participant.getUid().equals(firebaseUser.getUid())) {
-                                    sendNotifications(participant.getUid(), user.getUsername(), message, time);
+                if (user != null) {
+                    if (notify) {
+                        DatabaseReference reference1 = FirebaseDatabase.getInstance().getReference("Groups");
+                        reference1.child(groupId).child("Participants").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                    Participant participant = snapshot.getValue(Participant.class);
+                                    if (!participant.getUid().equals(firebaseUser.getUid())) {
+                                        sendNotifications(participant.getUid(), user.getUsername(), message, time);
+                                    }
                                 }
+                                notify = false;
                             }
-                            notify = false;
-                        }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                        }
-                    });
+                            }
+                        });
+                    }
                 }
             }
 
@@ -419,12 +421,15 @@ public class GroupMessageActivity extends AppCompatActivity {
     }
 
     private void status(String status) {
-        reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
 
-        HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("status", status);
+            HashMap<String, Object> hashMap = new HashMap<>();
+            hashMap.put("status", status);
 
-        reference.updateChildren(hashMap);
+            reference.updateChildren(hashMap);
+        }
     }
 
     @Override
@@ -449,7 +454,7 @@ public class GroupMessageActivity extends AppCompatActivity {
         progressDialog.setMessage("Sending Image...");
         progressDialog.setCanceledOnTouchOutside(false);
         progressDialog.show();
-        storageReference = FirebaseStorage.getInstance().getReference("ChatImages").child(System.currentTimeMillis()+ "." + getFileExtension(imageUri));
+        storageReference = FirebaseStorage.getInstance().getReference("GroupChatImages").child(System.currentTimeMillis()+ "." + getFileExtension(imageUri));
         // Compress the image
         Bitmap bmp = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -501,25 +506,27 @@ public class GroupMessageActivity extends AppCompatActivity {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             User user = dataSnapshot.getValue(User.class);
-                            if (notify) {
-                                DatabaseReference reference1 = FirebaseDatabase.getInstance().getReference("Groups");
-                                reference1.child(groupId).child("Participants").addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                            Participant participant = snapshot.getValue(Participant.class);
-                                            if (!participant.getUid().equals(firebaseUser.getUid())) {
-                                                sendNotifications(participant.getUid(), user.getUsername(), "sent a photo.", time);
+                            if (user != null) {
+                                if (notify) {
+                                    DatabaseReference reference1 = FirebaseDatabase.getInstance().getReference("Groups");
+                                    reference1.child(groupId).child("Participants").addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                                Participant participant = snapshot.getValue(Participant.class);
+                                                if (!participant.getUid().equals(firebaseUser.getUid())) {
+                                                    sendNotifications(participant.getUid(), user.getUsername(), "sent a photo.", time);
+                                                }
                                             }
+                                            notify = false;
                                         }
-                                        notify = false;
-                                    }
 
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                    }
-                                });
+                                        }
+                                    });
+                                }
                             }
                         }
 
@@ -766,25 +773,27 @@ public class GroupMessageActivity extends AppCompatActivity {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 User user = dataSnapshot.getValue(User.class);
-                                if (notify) {
-                                    DatabaseReference reference1 = FirebaseDatabase.getInstance().getReference("Groups");
-                                    reference1.child(groupId).child("Participants").addListenerForSingleValueEvent(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                                Participant participant = snapshot.getValue(Participant.class);
-                                                if (!participant.getUid().equals(firebaseUser.getUid())) {
-                                                    sendNotifications(participant.getUid(), user.getUsername(), "sent a voice message.", time);
+                                if (user != null) {
+                                    if (notify) {
+                                        DatabaseReference reference1 = FirebaseDatabase.getInstance().getReference("Groups");
+                                        reference1.child(groupId).child("Participants").addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                                    Participant participant = snapshot.getValue(Participant.class);
+                                                    if (!participant.getUid().equals(firebaseUser.getUid())) {
+                                                        sendNotifications(participant.getUid(), user.getUsername(), "sent a voice message.", time);
+                                                    }
                                                 }
+                                                notify = false;
                                             }
-                                            notify = false;
-                                        }
 
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                                        }
-                                    });
+                                            }
+                                        });
+                                    }
                                 }
                             }
 

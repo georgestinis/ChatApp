@@ -29,11 +29,14 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.chatapp.Model.Group;
+import com.example.chatapp.Model.User;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -365,6 +368,44 @@ public class GroupEditActivity extends AppCompatActivity {
                 break;
         }
     }
+
+    private void status(String status) {
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
+            reference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    User user = dataSnapshot.getValue(User.class);
+                    if (user != null && !status.equals(user.getStatus())) {
+                        System.out.println(status + " / " + user.getStatus());
+                        HashMap<String, Object> hashMap = new HashMap<>();
+                        hashMap.put("status", status);
+
+                        reference.updateChildren(hashMap);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        status("online");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        status("offline");
+    }
+
 
     @Override
     public boolean onSupportNavigateUp() {

@@ -151,6 +151,7 @@ public class GroupParticipantsShowActivity extends AppCompatActivity {
 
 
     private void status(String status) {
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser != null) {
             DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
 

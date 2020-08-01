@@ -33,6 +33,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -98,7 +99,7 @@ public class GroupInfoActivity extends AppCompatActivity {
                 String positiveButtonTitle;
                 if (myGroupRole.equals("creator")) {
                     dialogTitle = "Delete Group";
-                    dialogDescription = "Are you sure you want to Delete group permantly?";
+                    dialogDescription = "Are you sure you want to Delete group permanently?";
                     positiveButtonTitle = "DELETE";
                 }
                 else {
@@ -303,8 +304,11 @@ public class GroupInfoActivity extends AppCompatActivity {
         reference.child(createdBys).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String name = (String) dataSnapshot.child("username").getValue();
-                createdBy.setText("Created by " + name + " on " + dateTime);
+                User user = dataSnapshot.getValue(User.class);
+                if (user != null) {
+                    String name = user.getUsername();
+                    createdBy.setText("Created by " + name + " on " + dateTime);
+                }
             }
 
             @Override
@@ -312,6 +316,42 @@ public class GroupInfoActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void status(String status) {
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
+            reference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    User user = dataSnapshot.getValue(User.class);
+                    if (user != null && !status.equals(user.getStatus())) {
+                        HashMap<String, Object> hashMap = new HashMap<>();
+                        hashMap.put("status", status);
+
+                        reference.updateChildren(hashMap);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        status("online");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        status("offline");
     }
 
     @Override
