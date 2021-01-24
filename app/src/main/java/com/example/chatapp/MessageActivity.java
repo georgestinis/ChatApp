@@ -378,11 +378,8 @@ public class MessageActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
                     chatRef.child("id").setValue(receiver);
-                    chatRef.child("time").setValue(time);
                 }
-                else {
-                    chatRef.child("time").setValue(time);
-                }
+                chatRef.child("time").setValue(time);
             }
 
             @Override
@@ -396,11 +393,8 @@ public class MessageActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
                     chatRefReceiver.child("id").setValue(sender);
-                    chatRefReceiver.child("time").setValue(time);
                 }
-                else {
-                    chatRefReceiver.child("time").setValue(time);
-                }
+                chatRefReceiver.child("time").setValue(time);
             }
 
             @Override

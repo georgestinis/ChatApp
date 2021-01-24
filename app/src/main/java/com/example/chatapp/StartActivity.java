@@ -12,7 +12,6 @@ import com.google.firebase.auth.FirebaseUser;
 
 // TODO CLEAR NOTIFICATIONS FOR GROUP (CAN'T BE DONE BECAUSE OF THE PARTICIPANTS BEING MORE THAN 1)
 // TODO WHEN CLICKING IMAGE IN CHAT OPEN A WINDOW FOR IT
-// TODO PROFILE EDIT, DELETE
 // TODO GET CHATS INSIDE CHATLISΤ (PROBABLY NOT WORTH IT)
 
 public class StartActivity extends AppCompatActivity {
@@ -43,18 +42,8 @@ public class StartActivity extends AppCompatActivity {
         btn_login = findViewById(R.id.login);
         btn_register = findViewById(R.id.register);
 
-        btn_login.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(StartActivity.this, LoginActivity.class));
-            }
-        });
+        btn_login.setOnClickListener(v -> startActivity(new Intent(StartActivity.this, LoginActivity.class)));
 
-        btn_register.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(StartActivity.this, RegisterActivity.class));
-            }
-        });
+        btn_register.setOnClickListener(v -> startActivity(new Intent(StartActivity.this, RegisterActivity.class)));
     }
 }
